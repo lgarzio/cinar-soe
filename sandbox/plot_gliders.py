@@ -71,7 +71,25 @@ def main(sbuf, umf, ruf, lon_bounds, lat_bounds):
                 lon=np.array([]),
                 pH=np.array([]))
     glider_data = dict(sbu=data,
-                       ru=data)
+                       ru=data,
+                       um=data)
+
+    for um in umf:
+        # UMaine - glider rated for 350m, so ignore profiles > 300m (presumably off the shelf)
+        um_data = glider_data['um']
+        ds = xr.open_dataset(um)
+        pid = np.unique(ds.profile_time.values)
+        profile_identifier = 'profile_time'
+        phvar = 'ph_total'
+        for pd in pid:
+            pidx = np.where(ds[profile_identifier].values == pd)[0]
+            maxpress = np.nanmax(ds.pressure.values[pidx])
+            if np.logical_and(maxpress > 30, maxpress < 300):
+                idx = np.where(ds.pressure.values[pidx] > maxpress - 1)[0]
+                um_data['pressure'] = np.append(um_data['pressure'], maxpress)
+                um_data['lat'] = np.append(um_data['lat'], np.nanmean(ds.profile_lat.values[pidx][idx]))
+                um_data['lon'] = np.append(um_data['lon'], np.nanmean(ds.profile_lon.values[pidx][idx]))
+                um_data['pH'] = np.append(um_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
 
     for rf in ruf:
         # RU30 - glider rated for 200m, so ignore profiles > 170m (presumably off the shelf)
@@ -136,6 +154,8 @@ def main(sbuf, umf, ruf, lon_bounds, lat_bounds):
                      s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
     sct = ax.scatter(glider_data['ru']['lon'], glider_data['ru']['lat'], c=glider_data['ru']['pH'], marker='.',
                      s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
+    sct = ax.scatter(glider_data['um']['lon'], glider_data['um']['lat'], c=glider_data['um']['pH'], marker='.',
+                     s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
 
     # Set colorbar height equal to plot height
     divider = make_axes_locatable(ax)
@@ -154,7 +174,7 @@ def main(sbuf, umf, ruf, lon_bounds, lat_bounds):
 if __name__ == '__main__':
     sbu_files = ['/Users/garzio/Documents/rucool/Saba/gliderdata/charlie/sbu01_04_final_May2021_calculated.nc',
                  '/Users/garzio/Documents/rucool/Saba/gliderdata/charlie/sbu01_05_final_July2021_calculated.nc']
-    umaine_files = []
+    umaine_files = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2021/um_242-20210630T1916/delayed/um_242-20210630T1916-profile-sci-delayed_calculated.nc']
     ru_files = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2019/ru30-20190717T1812/ru30-20190717T1812-delayed-dac.nc',
                 '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/ru30-20210716T1804/delayed/ru30-20210716T1804-profile-sci-delayed_shifted.nc']
     lons = [-78, -65, -65, -78]
