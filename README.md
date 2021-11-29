@@ -1,5 +1,11 @@
 # CINAR State of the Ecosystem - OA Data Synthesis
 
+## Glider Data
+Delayed glider datasets containing raw pH voltages can be found on [RUCOOL's Glider ERDDAP Server](http://slocum-data.marine.rutgers.edu/erddap/index.html).
+
+Fully-processed and time-shifted pH glider datasets can be found [here](https://marine.rutgers.edu/~lgarzio/cinar_soe/glider_data/).
+
+
 ## Citations
 [CODAP-NA](https://essd.copernicus.org/articles/13/2777/2021/): Jiang, L.-Q., Feely, R. A., Wanninkhof, R., Greeley, D., Barbero, L., Alin, S., Carter, B. R., Pierrot, D., Featherstone, C., Hooper, J., Melrose, C., Monacci, N., Sharp, J. D., Shellito, S., Xu, Y.-Y., Kozyr, A., Byrne, R. H., Cai, W.-J., Cross, J., Johnson, G. C., Hales, B., Langdon, C., Mathis, J., Salisbury, J., and Townsend, D. W.: Coastal Ocean Data Analysis Product in North America (CODAP-NA) – an internally consistent data product for discrete inorganic carbon, oxygen, and nutrients on the North American ocean margins, Earth Syst. Sci. Data, 13, 2777–2799, https://doi.org/10.5194/essd-13-2777-2021, 2021.
 
