@@ -2,12 +2,11 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 11/11/2021
-CODAP-NA, glider and EcoMon datasets for OA analysis.
+Last modified: 11/29/2021
+Plot bottom-water pH using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 """
 
-import datetime as dt
 import os
 import numpy as np
 import pandas as pd
@@ -61,7 +60,7 @@ def add_map_features(axis, extent, edgecolor=None):
     gl.yformatter = LATITUDE_FORMATTER
 
 
-def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
+def main(lon_bounds, lat_bounds, codap_file, ecomon_files, glider_files):
     bathymetry = '/Users/garzio/Documents/rucool/bathymetry/GEBCO_2014_2D_-100.0_0.0_-10.0_50.0.nc'
     extent = [-78, -65, 35, 45]
     bathy = xr.open_dataset(bathymetry)
@@ -69,16 +68,7 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                       lat=slice(extent[2] - .1, extent[3] + .1))
 
     # get CODAP data
-    ds = xr.open_dataset(f)
-    years = ds.Year_UTC.values.astype(int)
-    months = ds.Month_UTC.values.astype(int)
-    days = ds.Day_UTC.values.astype(int)
-    times = np.array([])
-    for i, year in enumerate(years):
-        times = np.append(times, dt.datetime(year, months[i], days[i]).strftime('%Y-%m-%dT00:00:00'))
-
-    times = times.astype('datetime64[s]')
-
+    ds = xr.open_dataset(codap_file)
     idx = []
     codap_vars = dict(Month_UTC=np.array([]),
                       Year_UTC=np.array([]),
@@ -89,12 +79,12 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                       Depth=np.array([]),
                       Depth_bottom=np.array([]),
                       CTDTEMP_ITS90=np.array([]),
-                      CTDTEMP_flag=np.array([]),
                       recommended_Salinity_PSS78=np.array([]),
-                      recommended_Salinity_flag=np.array([]),
                       pH_TS_insitu_calculated=np.array([]),
                       pH_TS_insitu_measured=np.array([]),
                       Aragonite=np.array([]))
+
+    # make sure the data are within the defined extent
     for i, lon in enumerate(ds.Longitude.values):
         if Polygon(list(zip(lon_bounds, lat_bounds))).contains(Point(lon, ds.Latitude.values[i])):
             idx.append(i)
@@ -107,8 +97,7 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                     codap_vars[key] = np.append(codap_vars[key], ds[key].values[i])
 
     # select data from May - Aug
-    df = pd.DataFrame(codap_vars, index=times[idx])
-    df.reset_index(inplace=True)
+    df = pd.DataFrame(codap_vars)
     df = df[df.Month_UTC > 4]
     df = df[df.Month_UTC < 9]
     df['pH'] = df['pH_TS_insitu_measured']
@@ -120,6 +109,7 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
 
     df = df[df.pH != -999]
 
+    # initialize dictionary to append bottom pH data from cruises
     data = dict(cruise=np.array([]),
                 depth=np.array([]),
                 lat=np.array([]),
@@ -145,7 +135,7 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                     lon_idx = abs(bathy.lon.values - profile_coords[0]).argmin()
                     station_water_depth = -bathy.elevation[lat_idx, lon_idx].values
 
-                # if the measured value is within +/- 20% of the water column, keep the value
+                # if the pH sample is within +/- 20% of the water column, keep the value
                 depth_threshold = [station_water_depth * .8, station_water_depth * 1.2]
                 if np.logical_and(maxdepth > depth_threshold[0], maxdepth < depth_threshold[1]):
                     data['cruise'] = np.append(data['cruise'], cruise)
@@ -154,12 +144,14 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                     data['lon'] = np.append(data['lon'], profile_coords[0])
                     data['pH'] = np.append(data['pH'], dfc_profile_max.pH.values[0])
 
-    # additional EcoMon data that aren't included in CODAP yet
+    # additional EcoMon data that aren't included in CODAP
     for ef in ecomon_files:
         df_ecomon = pd.read_csv(ef)
         df_ecomon.replace(-999, np.nan, inplace=True)
         df_ecomon.dropna(subset=['pH_TS_20C'], inplace=True)
-        df_ecomon.dropna(subset=['Depth_Bottom_meters'], inplace=True)  # bottom depth isn't recorded only in flow-thru data
+
+        # the only time bottom depth isn't recorded is in the flow-thru data, so remove those rows
+        df_ecomon.dropna(subset=['Depth_Bottom_meters'], inplace=True)
 
         # combine Station_ID and Cast_number to get a unique profile
         df_ecomon['profile_id'] = df_ecomon.Station_ID.astype(str) + '_' + df_ecomon.Cast_number.astype(str)
@@ -182,7 +174,7 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                     data['lat'] = np.append(data['lat'], profile_coords[1])
                     data['lon'] = np.append(data['lon'], profile_coords[0])
 
-                    # calculate pH at in situ temperature, pressure, and salinity
+                    # calculate pH at in situ temperature, pressure, and salinity using PyCO2SYS
                     ph_20c = df_ecomon_profile_max.pH_TS_20C.values[0]
                     par1_type = 3
                     ta = df_ecomon_profile_max['TA_umol/kg'].values[0]
@@ -205,82 +197,47 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
                     data['pH'] = np.append(data['pH'], results['pH_out'])
 
     # get glider data
-    # for each glider, grab the data in the bottom 1m of the profile except when the profile is deeper than a
+    # for each glider, grab the data in the bottom 1m of each profile except when the profile is deeper than a
     # defined threshold (when the glider is off the shelf and no longer sampling the bottom)
-    # we're assuming each profile samples the bottom, except off the shelf
 
-    gldata = dict(pressure=np.array([]),
-                  lat=np.array([]),
-                  lon=np.array([]),
-                  pH=np.array([]))
-    glider_data = dict(sbu=gldata,
-                       ru=gldata,
-                       um=gldata)
+    max_depth_threshold = dict(sbu01=170,
+                               ru30=170,
+                               um_242=300)
 
-    for rf in ruf:
-        # RU30 - glider rated for 200m, so ignore profiles > 170m (presumably off the shelf)
-        ru_data = glider_data['ru']
-        ds = xr.open_dataset(rf)
+    glider_data = dict(pressure=np.array([]),
+                       lat=np.array([]),
+                       lon=np.array([]),
+                       pH=np.array([]))
+
+    for gf in glider_files:
+        glider = gf.split('/')[-1].split('-')[0]
+        ds = xr.open_dataset(gf)
         try:
-            profileid = np.unique(ds.profile_id.values)
-            profile_identifier = 'profile_id'
-            phvar = 'pH'
-        except AttributeError:
             profileid = np.unique(ds.profile_time.values)
             profile_identifier = 'profile_time'
             phvar = 'ph_total_shifted'
+        except AttributeError:
+            profileid = np.unique(ds.profile_id.values)
+            profile_identifier = 'profile_id'
+            phvar = 'pH'
         for pid in profileid:
             pidx = np.where(ds[profile_identifier].values == pid)[0]
             maxpress = np.nanmax(ds.pressure.values[pidx])
-            if np.logical_and(maxpress > 30, maxpress < 170):
+            if np.logical_and(maxpress > 30, maxpress < max_depth_threshold[glider]):
                 idx = np.where(ds.pressure.values[pidx] > maxpress - 1)[0]
-                ru_data['pressure'] = np.append(ru_data['pressure'], maxpress)
-                ru_data['lat'] = np.append(ru_data['lat'], np.nanmean(ds.latitude.values[pidx][idx]))
-                ru_data['lon'] = np.append(ru_data['lon'], np.nanmean(ds.longitude.values[pidx][idx]))
-                ru_data['pH'] = np.append(ru_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
+                glider_data['pressure'] = np.append(glider_data['pressure'], maxpress)
+                glider_data['lat'] = np.append(glider_data['lat'], np.nanmean(ds.latitude.values[pidx][idx]))
+                glider_data['lon'] = np.append(glider_data['lon'], np.nanmean(ds.longitude.values[pidx][idx]))
+                glider_data['pH'] = np.append(glider_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
 
-    for sf in sbuf:
-        # SBU - glider rated for 350m but Charlie keeps it at 180m off the shelf, so ignore profiles > 170m
-        sbu_data = glider_data['sbu']
-        ds = xr.open_dataset(sf)
-        ptime = np.unique(ds.profiletime)  # these data are actually grouped by yo (one down-up pair)
-        for pt in ptime:
-            dst = ds.sel(profiletime=pt)
-            maxpress = np.nanmax(dst.pressure.values)
-            if np.logical_and(maxpress > 30, maxpress < 170):
-                idx = np.where(dst.pressure.values > maxpress - 1)[0]
-                sbu_data['pressure'] = np.append(sbu_data['pressure'], maxpress)
-                sbu_data['lat'] = np.append(sbu_data['lat'], np.unique(dst.profilelat.values)[0])
-                sbu_data['lon'] = np.append(sbu_data['lon'], np.unique(dst.profilelon.values)[0])
-                sbu_data['pH'] = np.append(sbu_data['pH'], statistics.median(dst.ph_total.values[idx]))
-
-    for um in umf:
-        # UMaine - glider rated for 350m, so ignore profiles > 300m (presumably off the shelf)
-        um_data = glider_data['um']
-        ds = xr.open_dataset(um)
-        profileid = np.unique(ds.profile_time.values)
-        profile_identifier = 'profile_time'
-        phvar = 'ph_total'
-        for pid in profileid:
-            pidx = np.where(ds[profile_identifier].values == pid)[0]
-            maxpress = np.nanmax(ds.pressure.values[pidx])
-            if np.logical_and(maxpress > 30, maxpress < 300):
-                idx = np.where(ds.pressure.values[pidx] > maxpress - 1)[0]
-                um_data['pressure'] = np.append(um_data['pressure'], maxpress)
-                um_data['lat'] = np.append(um_data['lat'], np.nanmean(ds.profile_lat.values[pidx][idx]))
-                um_data['lon'] = np.append(um_data['lon'], np.nanmean(ds.profile_lon.values[pidx][idx]))
-                um_data['pH'] = np.append(um_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
-
-    # plot
+    # plot map of summer bottom pH data
     fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
     plt.subplots_adjust(right=0.82)
 
     # define bathymetry levels and data
-    #levels = np.arange(-5000, 5100, 50)
     bath_lat = bathy.variables['lat'][:]
     bath_lon = bathy.variables['lon'][:]
     bath_elev = bathy.variables['elevation'][:]
-    #plt.contourf(bath_lon, bath_lat, bath_elev,  levels, cmap=cmo.cm.topo, transform=ccrs.PlateCarree())
 
     levels = [-3000, -1000, -100]
     CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
@@ -289,16 +246,12 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
 
     add_map_features(ax, extent)
 
-    # plot CODAP & extra EcoMon data
+    # plot cruise data (CODAP & EcoMon)
     sct = ax.scatter(data['lon'], data['lat'], c=data['pH'], marker='.', s=100, cmap=cmo.cm.matter,
                      transform=ccrs.PlateCarree(), zorder=10)
 
     # plot glider data
-    sct = ax.scatter(glider_data['sbu']['lon'], glider_data['sbu']['lat'], c=glider_data['sbu']['pH'], marker='.',
-                     s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
-    sct = ax.scatter(glider_data['ru']['lon'], glider_data['ru']['lat'], c=glider_data['ru']['pH'], marker='.',
-                     s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
-    sct = ax.scatter(glider_data['um']['lon'], glider_data['um']['lat'], c=glider_data['um']['pH'], marker='.',
+    sct = ax.scatter(glider_data['lon'], glider_data['lat'], c=glider_data['pH'], marker='.',
                      s=75, cmap=cmo.cm.matter, transform=ccrs.PlateCarree(), zorder=10)
 
     # Set colorbar height equal to plot height
@@ -310,21 +263,20 @@ def main(f, lon_bounds, lat_bounds, sbuf, umf, ruf, ecomon_files):
     cb = plt.colorbar(sct, cax=cax)
     cb.set_label(label='Bottom pH (summer)')
 
-    sfile = os.path.join(os.path.dirname(f), 'bottom_ph_map.png')
+    sfile = os.path.join(os.path.dirname(codap_file), 'bottom_pH_map.png')
     plt.savefig(sfile, dpi=200)
     plt.close()
 
 
 if __name__ == '__main__':
-    fname = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/CODAP_NA_v2021.nc'
     lons = [-78, -65, -65, -78]
     lats = [35, 35, 45, 45]
-    sbu_files = ['/Users/garzio/Documents/rucool/Saba/gliderdata/charlie/sbu01_04_final_May2021_calculated.nc',
-                 '/Users/garzio/Documents/rucool/Saba/gliderdata/charlie/sbu01_05_final_July2021_calculated.nc']
-    umaine_files = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2021/um_242-20210630T1916/delayed/um_242-20210630T1916-profile-sci-delayed_calculated.nc']
-    ru_files = [
-        '/Users/garzio/Documents/rucool/Saba/gliderdata/2019/ru30-20190717T1812/ru30-20190717T1812-delayed-dac.nc',
-        '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/ru30-20210716T1804/delayed/ru30-20210716T1804-profile-sci-delayed_shifted.nc']
+    codap = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/CODAP_NA_v2021.nc'
     ecomon = ['/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33GG20190815-GU1902_data.csv',
               '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33HH20190522-HB1902_data.csv']
-    main(fname, lons, lats, sbu_files, umaine_files, ru_files, ecomon)
+    gliders = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2021/sbu01-20210513T1933/delayed/sbu01-20210513T1933-profile-sci-delayed_shifted.nc',
+               '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/sbu01-20210720T1628/delayed/sbu01-20210720T1628-profile-sci-delayed_shifted.nc',
+               '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/um_242-20210630T1916/delayed/um_242-20210630T1916-profile-sci-delayed_shifted.nc',
+               '/Users/garzio/Documents/rucool/Saba/gliderdata/2019/ru30-20190717T1812/ru30-20190717T1812-profile-sci-delayed-dac.nc',
+               '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/ru30-20210716T1804/delayed/ru30-20210716T1804-profile-sci-delayed_shifted.nc']
+    main(lons, lats, codap, ecomon, gliders)
