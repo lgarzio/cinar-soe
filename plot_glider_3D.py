@@ -109,7 +109,7 @@ def main(save_dir, file):
         # ax.view_init(elev=30, azim=-60)  # defaults
         ax.view_init(elev=rotate_view[0], azim=rotate_view[1])  # rotate the view
 
-    sfile = os.path.join(save_dir, f'{deployment}_pH_3D.png')
+    sfile = os.path.join(save_dir, f'{deployment}_summer2021_pH_3D.png')
     plt.savefig(sfile, dpi=200)
     plt.close()
 
