@@ -225,12 +225,24 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, glider_files):
         for pid in profileid:
             pidx = np.where(ds[profile_identifier].values == pid)[0]
             maxpress = np.nanmax(ds.pressure.values[pidx])
-            if np.logical_and(maxpress > 30, maxpress < max_depth_threshold[glider]):
+            if np.logical_and(maxpress > 10, maxpress < max_depth_threshold[glider]):
                 idx = np.where(ds.pressure.values[pidx] > maxpress - 1)[0]
-                glider_data['pressure'] = np.append(glider_data['pressure'], maxpress)
-                glider_data['lat'] = np.append(glider_data['lat'], np.nanmean(ds.latitude.values[pidx][idx]))
-                glider_data['lon'] = np.append(glider_data['lon'], np.nanmean(ds.longitude.values[pidx][idx]))
-                glider_data['pH'] = np.append(glider_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
+
+                # compare the glider depth to the global bathymetry file
+                gl_lat = np.nanmean(ds.latitude.values[pidx][idx])
+                gl_lon = np.nanmean(ds.longitude.values[pidx][idx])
+                profile_coords = [gl_lon, gl_lat]
+                lat_idx = abs(bathy.lat.values - profile_coords[1]).argmin()
+                lon_idx = abs(bathy.lon.values - profile_coords[0]).argmin()
+                station_water_depth = -bathy.elevation[lat_idx, lon_idx].values
+
+                # if the glider sample is within +/- 20% of the water column, keep the value
+                depth_threshold = [station_water_depth * .8, station_water_depth * 1.2]
+                if np.logical_and(maxpress > depth_threshold[0], maxpress < depth_threshold[1]):
+                    glider_data['pressure'] = np.append(glider_data['pressure'], maxpress)
+                    glider_data['lat'] = np.append(glider_data['lat'], gl_lat)
+                    glider_data['lon'] = np.append(glider_data['lon'], gl_lon)
+                    glider_data['pH'] = np.append(glider_data['pH'], statistics.median(ds[phvar].values[pidx][idx]))
 
     # plot map of summer bottom pH data
     fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
