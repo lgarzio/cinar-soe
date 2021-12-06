@@ -2,8 +2,8 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 11/29/2021
-Plot bottom-water pH using CODAP-NA, EcoMon, and glider datasets.
+Last modified: 12/6/2021
+Plot summer bottom-water pH using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 """
 
@@ -96,9 +96,9 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, glider_files):
                 else:
                     codap_vars[key] = np.append(codap_vars[key], ds[key].values[i])
 
-    # select data from May - Aug
+    # select data from June - Aug
     df = pd.DataFrame(codap_vars)
-    df = df[df.Month_UTC > 4]
+    df = df[df.Month_UTC > 5]
     df = df[df.Month_UTC < 9]
     df['pH'] = df['pH_TS_insitu_measured']
 
@@ -147,6 +147,8 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, glider_files):
     # additional EcoMon data that aren't included in CODAP
     for ef in ecomon_files:
         df_ecomon = pd.read_csv(ef)
+        df_ecomon = df_ecomon[df_ecomon.Month_UTC > 5]
+        df_ecomon = df_ecomon[df_ecomon.Month_UTC < 9]
         df_ecomon.replace(-999, np.nan, inplace=True)
         df_ecomon.dropna(subset=['pH_TS_20C'], inplace=True)
 
@@ -274,8 +276,7 @@ if __name__ == '__main__':
     codap = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/CODAP_NA_v2021.nc'
     ecomon = ['/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33GG20190815-GU1902_data.csv',
               '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33HH20190522-HB1902_data.csv']
-    gliders = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2021/sbu01-20210513T1933/delayed/sbu01-20210513T1933-profile-sci-delayed_shifted.nc',
-               '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/sbu01-20210720T1628/delayed/sbu01-20210720T1628-profile-sci-delayed_shifted.nc',
+    gliders = ['/Users/garzio/Documents/rucool/Saba/gliderdata/2021/sbu01-20210720T1628/delayed/sbu01-20210720T1628-profile-sci-delayed_shifted.nc',
                '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/um_242-20210630T1916/delayed/um_242-20210630T1916-profile-sci-delayed_shifted.nc',
                '/Users/garzio/Documents/rucool/Saba/gliderdata/2019/ru30-20190717T1812/ru30-20190717T1812-profile-sci-delayed-dac.nc',
                '/Users/garzio/Documents/rucool/Saba/gliderdata/2021/ru30-20210716T1804/delayed/ru30-20210716T1804-profile-sci-delayed_shifted.nc']
