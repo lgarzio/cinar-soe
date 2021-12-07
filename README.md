@@ -1,7 +1,7 @@
 # CINAR State of the Ecosystem - OA Data Synthesis
 
 ## Glider Data
-Delayed glider datasets containing raw pH voltages can be found on [RUCOOL's Glider ERDDAP Server](http://slocum-data.marine.rutgers.edu/erddap/index.html).
+Full-resolution delayed-mode glider datasets containing raw pH voltages can be found on [RUCOOL's Glider ERDDAP Server](http://slocum-data.marine.rutgers.edu/erddap/index.html).
 
 Fully-processed and time-shifted pH glider datasets can be found [here](https://marine.rutgers.edu/~lgarzio/cinar_soe/glider_data/).
 
