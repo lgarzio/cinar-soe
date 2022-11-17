@@ -18,12 +18,6 @@ import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 import cmocean as cmo
 import pickle
-from shapely.geometry.polygon import Polygon
-from shapely.geometry import Point
-import statistics
-import copy
-import PyCO2SYS as pyco2
-import functions.common as cf
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
 plt.rcParams.update({'font.size': 13})
 

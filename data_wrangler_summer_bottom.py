@@ -11,7 +11,6 @@ import os
 import numpy as np
 import pandas as pd
 import xarray as xr
-import matplotlib.pyplot as plt
 from shapely.geometry.polygon import Polygon
 from shapely.geometry import Point
 import statistics
@@ -19,7 +18,6 @@ import PyCO2SYS as pyco2
 import pickle
 import functions.common as cf
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
-plt.rcParams.update({'font.size': 13})
 
 
 def main(lon_bounds, lat_bounds, codap_file, ecomon_files, glider_files, savedir):
