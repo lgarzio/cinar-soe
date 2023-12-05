@@ -3,11 +3,11 @@
 ## Data Files
 Full-resolution delayed-mode glider datasets containing raw pH voltages can be found on [RUCOOL's Glider ERDDAP Server](http://slocum-data.marine.rutgers.edu/erddap/index.html).
 
-SBU01 delayed mode files (2022 and 2023) were downloaded from the [IOOS Glider DAC][https://gliders.ioos.us/erddap/index.html].
+SBU01 delayed mode files (2022 and 2023) were downloaded from the [IOOS Glider DAC](https://gliders.ioos.us/erddap/index.html).
 
 Fully-processed pH glider datasets that are adjusted for sensor time-lag can be found [here](https://marine.rutgers.edu/~lgarzio/cinar_soe/glider_data/).
 
-Synthesized datasets that contain summer bottom-water pH and aragonite saturation state from all data sources can be found [here](https://marine.rutgers.edu/~lgarzio/cinar_soe/bottom_water_data/). Code used to generated the synthesized (vessel-based dataset)[https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_summer_bottom_vessel.py] and (glider-based dataset)[https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_summer_bottom_glider.py]. Original vessel-based datasets were downloaded via the [CODAP documentation](https://essd.copernicus.org/articles/13/2777/2021/), and additional ECOMON datasets not included in the original CODAP dataset were downloaded via the [NCEI Ocean Carbon and Acidification Data Portal](https://www.ncei.noaa.gov/access/ocean-carbon-acidification-data-system-portal/).
+Synthesized datasets that contain summer bottom-water pH and aragonite saturation state from all data sources can be found [here](https://marine.rutgers.edu/~lgarzio/cinar_soe/bottom_water_data/). Code used to generated the synthesized [vessel-based dataset](https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_summer_bottom_vessel.py) and [glider-based dataset](https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_summer_bottom_glider.py). Original vessel-based datasets were downloaded via the [CODAP documentation](https://essd.copernicus.org/articles/13/2777/2021/), and additional ECOMON datasets not included in the original CODAP dataset were downloaded via the [NCEI Ocean Carbon and Acidification Data Portal](https://www.ncei.noaa.gov/access/ocean-carbon-acidification-data-system-portal/).
 
 
 ## Citations
