@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 12/4/2023
+Last modified: 12/5/2023
 Plot summer bottom-water pH using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 """
@@ -47,8 +47,8 @@ def main(cruise_file, glider_file, ab, savedir):
     year_list = [y for y in range(min_year, max_year + 1)]
 
     # plot map of summer bottom pH data for entire dataset
-    fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-    plt.subplots_adjust(right=0.82)
+    fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+    plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
 
     # define bathymetry levels and data
     bath_lat = bathy.variables['lat'][:]
@@ -92,8 +92,8 @@ def main(cruise_file, glider_file, ab, savedir):
         # grab data for the year
         idx = np.where(pd.to_datetime(time_full).year == y)[0]
 
-        fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-        plt.subplots_adjust(right=0.82)
+        fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+        plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
 
         # add bathymetry
         CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
@@ -115,7 +115,7 @@ def main(cruise_file, glider_file, ab, savedir):
         cb.set_label(label='Bottom pH')
 
         # add title
-        plt.suptitle(f'Summer {y}', x=.46, y=.93)
+        plt.suptitle(f'Summer {y}', x=.48, y=.96)
 
         if ab:
             ax.fill(gom_box_lons, gom_box_lats, color='none', edgecolor='cyan', linewidth=2.5,
@@ -141,5 +141,5 @@ if __name__ == '__main__':
     cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc/vessel_based_summer_bottom_OA_data.nc'
     glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc/glider_based_summer_bottom_OA_data.nc'
     add_boxes = False
-    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/plots2023'
+    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/plots2024'
     main(cruise_data, glider_data, add_boxes, save_directory)

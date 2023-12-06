@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/16/2022
-Last modified: 12/4/2023
+Last modified: 12/5/2023
 Plot in highlighted circles when summer bottom-water aragonite saturation state (omega) is <= defined thresholds for
 key Mid-Atlantic species using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
@@ -59,8 +59,8 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
     time_full = time_full[nonan_idx]
 
     # plot map of summer bottom omega for the entire dataset
-    fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-    plt.subplots_adjust(right=0.82)
+    fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+    plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
 
     # define bathymetry levels and data
     bath_lat = bathy.variables['lat'][:]
@@ -111,8 +111,8 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
         # grab data for the year
         idx = np.where(pd.to_datetime(time_full).year == y)[0]
 
-        fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-        plt.subplots_adjust(right=0.82)
+        fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+        plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
 
         # add bathymetry
         CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
@@ -134,7 +134,7 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
         cb.set_label(label='Bottom Aragonite Saturation State')
 
         # add title
-        plt.suptitle(f'Summer {y}', x=.46, y=.93)
+        plt.suptitle(f'Summer {y}', x=.48, y=.96)
 
         if ab:
             ax.fill(gom_box_lons, gom_box_lats, color='none', edgecolor='cyan', linewidth=2.5,
@@ -159,8 +159,8 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
     # plot maps where values are below defined thresholds for select species
     savedir = os.path.join(savedir, 'species_omega_thresholds')
     for key, value in thresh.items():
-        fig, ax = plt.subplots(figsize=(11, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-        plt.subplots_adjust(right=0.82)
+        fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+        plt.subplots_adjust(top=.92, bottom=0.08, right=.94, left=0.08)
         CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
                          transform=ccrs.PlateCarree())
         ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
@@ -224,8 +224,8 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
 if __name__ == '__main__':
     cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc/vessel_based_summer_bottom_OA_data.nc'
     glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc/glider_based_summer_bottom_OA_data.nc'
-    add_boxes = True
-    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/plots2023'
+    add_boxes = False
+    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/plots2024'
     thresholds = dict(
         atlantic_sea_scallop=dict(
             long_name='Atlantic Sea Scallop',
