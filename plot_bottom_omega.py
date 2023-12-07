@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/16/2022
-Last modified: 12/5/2023
+Last modified: 12/6/2023
 Plot in highlighted circles when summer bottom-water aragonite saturation state (omega) is <= defined thresholds for
 key Mid-Atlantic species using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
@@ -219,6 +219,50 @@ def main(cruise_file, glider_file, ab, savedir, thresh):
 
         df.to_csv(os.path.join(savedir, 'bottom_omega_full-{}.csv'.format(key)), index=False)
         df_days.to_csv(os.path.join(savedir, 'bottom_omega_days_threshold_reached-{}.csv'.format(key)), index=False)
+
+        # make a plot for each year
+        region_years = np.unique(pd.to_datetime(time_full_region).year)
+        for y in region_years:
+            fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+            plt.subplots_adjust(top=.9, bottom=0.08, right=.94, left=0.08)
+            CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
+                             transform=ccrs.PlateCarree())
+            ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
+
+            cf.add_map_features(ax, value['lims'])
+
+            # grab data for the year
+            year_idx = np.where(pd.to_datetime(time_full_region).year == y)[0]
+            lon_full_region_yr = lon_full_region[year_idx]
+            lat_full_region_yr = lat_full_region[year_idx]
+            data_full_region_yr = data_full_region[year_idx]
+            depth_full_region_yr = depth_full_region[year_idx]
+
+            # plot the values above the threshold and outside of the organism's depth range as empty circles
+            thresh_idx = np.where(data_full_region_yr > value['omega_sensitivity'])[0]
+            depth_idx = np.where(np.logical_or(depth_full_region_yr < value['depth_range'][0],
+                                               depth_full_region_yr > value['depth_range'][1]))[0]
+            empty_idx = np.unique(np.append(thresh_idx, depth_idx))
+
+            sct = ax.scatter(lon_full_region_yr[empty_idx], lat_full_region_yr[empty_idx],
+                             marker='o', c='lightgray', s=20, transform=ccrs.PlateCarree(), zorder=10)
+
+            # plot the values less than the threshold and within the depth range as filled circles
+            mask = np.ones(len(lon_full_region_yr), bool)
+            mask[empty_idx] = 0
+            sct = ax.scatter(lon_full_region_yr[mask], lat_full_region_yr[mask], c='darkcyan',
+                             marker='o', s=20, transform=ccrs.PlateCarree(), zorder=10)
+
+            plt.title('Omega below calcification sensitivity of {}:\n{} (depth range: {}-{}m)\n{}'.format(
+                value['omega_sensitivity'],
+                value['long_name'],
+                value['depth_range'][0],
+                value['depth_range'][1],
+                y))
+
+            sfile = os.path.join(savedir, 'years', f'bottom_omega_map-{key}-{y}.png')
+            plt.savefig(sfile, dpi=200)
+            plt.close()
 
 
 if __name__ == '__main__':
