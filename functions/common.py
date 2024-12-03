@@ -10,7 +10,7 @@ import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 
 
-def add_map_features(axis, extent, edgecolor=None):
+def add_map_features(axis, extent, edgecolor=None, oceancolor='none'):
     edgecolor = edgecolor or 'black'
 
     land = cfeature.NaturalEarthFeature('physical', 'land', '10m', edgecolor=edgecolor, facecolor='tan')
@@ -23,6 +23,7 @@ def add_map_features(axis, extent, edgecolor=None):
 
     # Axes properties and features
     axis.set_extent(extent)
+    axis.set_facecolor(oceancolor)
     axis.add_feature(land)
     axis.add_feature(cfeature.RIVERS)
     axis.add_feature(cfeature.LAKES)
@@ -43,6 +44,35 @@ def add_map_features(axis, extent, edgecolor=None):
     gl.ylabel_style = {'size': 11, 'color': 'black'}
     gl.xformatter = LONGITUDE_FORMATTER
     gl.yformatter = LATITUDE_FORMATTER
+
+
+def calc_ta_nyb(season, sal):
+    # calculate TA for the New York Bight region
+    if season == 'DJF':
+        m = 48.71
+        b = 601.75
+    elif season == 'MAM':
+        m = 42.37
+        b = 817.59
+    elif season == 'JJA':
+        m = 50.75
+        b = 541.81
+    elif season == 'SON':
+        m = 46.42
+        b = 687.99
+
+    ta = m * sal + b
+    return ta
+
+
+def calc_ta_gom(temp, sal):
+    # calculate TA for the Gulf of Maine region according to McGarry et al 2020
+    # normalize temperature and salinity to the McGarry et al 2020 data from Table 3
+    tempn = (temp - 13.20) / 5.92
+    saln = (sal - 34.40) / 1.49
+    ta = 2289 + (0.758 * tempn) + (69.2 * saln)
+
+    return ta
 
 
 def run_co2sys_ta_ph(ta, ph, sal, temp=25, press_dbar=0):
