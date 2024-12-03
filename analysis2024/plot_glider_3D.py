@@ -6,6 +6,7 @@ Last modified: 11/29/2021
 Plot 3D maps of glider pH.
 """
 
+import datetime as dt
 import os
 import xarray as xr
 import numpy as np
@@ -89,6 +90,11 @@ def main(save_dir, file):
     for f in file:
         ds = xr.open_dataset(f)
 
+        if 'sbu01' in f:
+            start_date = dt.datetime(2021, 8, 14, 0, 0)
+            end_date = dt.datetime(2021, 8, 21, 0, 0)
+            ds = ds.sel(time=slice(start_date, end_date))
+
         try:
             sct = ax.scatter(ds.longitude.values, ds.latitude.values, ds.depth.values, c=ds.ph_total_shifted.values, s=2,
                              cmap=cmap, norm=norm, zorder=2)
@@ -109,7 +115,7 @@ def main(save_dir, file):
         # ax.view_init(elev=30, azim=-60)  # defaults
         ax.view_init(elev=rotate_view[0], azim=rotate_view[1])  # rotate the view
 
-    sfile = os.path.join(save_dir, f'{deployment}_summer2021_pH_3D.png')
+    sfile = os.path.join(save_dir, f'{deployment}_summer2021_pH_3D-sbu01lastleg.png')
     plt.savefig(sfile, dpi=200)
     plt.close()
 

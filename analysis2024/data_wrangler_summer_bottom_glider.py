@@ -123,6 +123,15 @@ def main(glider_files, savedir):
         ds = xr.open_dataset(gf)
         deployment = ds.title.split(' ')[0].split('-delayed')[0]
         glider = (deployment.split('-')[0]).lower()
+        print(deployment)
+
+        # only grab data from June - Aug
+        months = pd.to_datetime(ds.time.values).month
+        month_idx = np.where(np.logical_and(months >= 6, months <= 8))[0]
+        try:
+            ds = ds.isel(time=month_idx)
+        except ValueError:
+            ds = ds.isel(row=month_idx)
 
         # grab the correct variables for each dataset
         if deployment in ['SBU01-20220805T1855', 'SBU01-20230706T1707']:  # datasets from the DAC
@@ -231,5 +240,8 @@ if __name__ == '__main__':
         '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/nc_files/SBU01-20230706T1707-delayed-co2sys.nc',
         '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/nc_files/ru39-20230817T1520-delayed.nc'
     ]
+    # gliders = [
+    #     '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/nc_files/ru39-20230817T1520-delayed.nc'
+    # ]
     save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc'
     main(gliders, save_directory)

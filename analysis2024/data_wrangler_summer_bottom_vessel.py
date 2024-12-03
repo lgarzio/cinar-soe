@@ -168,12 +168,15 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, savedir):
                     cid = [x.decode('UTF-8') for x in cid]
                     codap_vars[key] = np.append(codap_vars[key], ''.join(cid).strip())
                 else:
+                    if key == 'Year_UTC':
+                        if bool(ds[key].values[i] == 2007):
+                            print('check')
                     codap_vars[key] = np.append(codap_vars[key], ds[key].values[i])
 
-    # select data from June - Aug
+    # select data from June - Sept
     df = pd.DataFrame(codap_vars)
     df = df[df.Month_UTC > 5]
-    df = df[df.Month_UTC < 9]
+    df = df[df.Month_UTC < 10]
     df['pH'] = df['pH_TS_insitu_measured']
 
     # generate timestamp
@@ -257,7 +260,7 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, savedir):
     for ef in ecomon_files:
         df_ecomon = pd.read_csv(ef)
         df_ecomon = df_ecomon[df_ecomon.Month_UTC > 5]
-        df_ecomon = df_ecomon[df_ecomon.Month_UTC < 9]
+        df_ecomon = df_ecomon[df_ecomon.Month_UTC < 10]
         df_ecomon.replace(-999, np.nan, inplace=True)
         df_ecomon.dropna(subset=['pH_TS_20C'], inplace=True)
 
@@ -374,10 +377,10 @@ def main(lon_bounds, lat_bounds, codap_file, ecomon_files, savedir):
 if __name__ == '__main__':
     lons = [-78, -65, -65, -78]  # longitude boundaries for grabbing vessel-based data
     lats = [35, 35, 45, 45]  # latitude boundaries for grabbing vessel-based data
-    codap = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/CODAP_NA_v2021.nc'
-    ecomon = ['/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33GG20190815-GU1902_data.csv',
-              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33HH20190522-HB1902_data.csv',
-              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/334B20210805-PC2104_Data.csv',
-              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/EcoMon/33HH20220531_HB2204_Data.csv']
-    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE2021/data/output_nc'
+    codap = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/CODAP_NA_v2021.nc'
+    ecomon = ['/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/EcoMon/33GG20190815-GU1902_data.csv',
+              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/EcoMon/33HH20190522-HB1902_data.csv',
+              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/EcoMon/334B20210805-PC2104_Data.csv',
+              '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/EcoMon/33HH20220531_HB2204_Data.csv']
+    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc'
     main(lons, lats, codap, ecomon, save_directory)
