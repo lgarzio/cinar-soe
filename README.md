@@ -2,7 +2,8 @@
 
 ## Data Files
 
-###2025 Analysis
+### 2025 Analysis
+
 Full-resolution delayed-mode glider datasets can be downloaded from the [IOOS Glider DAC](https://gliders.ioos.us/erddap/index.html). A table of all pH glider datasets used in this analysis can be found [here](https://github.com/lgarzio/cinar-soe/blob/master/analysis2025/glider_deployment_summary_2019_2024.csv).
 
 Vessel-based data were mined from the [Coastal Ocean Data Analysis Product in North America](https://essd.copernicus.org/articles/13/2777/2021/), version v2021 (Jiang et al. 2021). More recent vessel-based datasets that were not included in CODAP-NA v2021 were downloaded via the [NCEI Ocean Carbon and Acidification Data Portal](https://www.ncei.noaa.gov/access/ocean-carbon-acidification-data-system-portal/).
@@ -31,7 +32,8 @@ Humphreys, M. P., Gregor, L., Pierrot, D., van Heuven, S. M. A. C., Lewis, E. R.
 Lewis, E. and Wallace, D. W. R. (1998) Program Developed for CO2 System Calculations, ORNL/CDIAC-105, Carbon Dioxide Inf. Anal. Cent., Oak Ridge Natl. Lab., Oak Ridge, Tenn., 38 pp., [https://salish-sea.pnnl.gov/media/ORNL-CDIAC-105.pdf](https://salish-sea.pnnl.gov/media/ORNL-CDIAC-105.pdf)
 
 
-###2024 Analysis
+### 2024 Analysis
+
 Full-resolution delayed-mode glider datasets containing raw pH voltages can be found on [RUCOOL's Glider ERDDAP Server](http://slocum-data.marine.rutgers.edu/erddap/index.html).
 
 SBU01 delayed mode files (2022 and 2023) were downloaded from the [IOOS Glider DAC](https://gliders.ioos.us/erddap/index.html).
