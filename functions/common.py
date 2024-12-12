@@ -2,12 +2,14 @@
 
 """
 Author: Lori Garzio on 3/8/2021
-Last modified: 12/1/2023
+Last modified: 12/12/2024
 """
 
 import PyCO2SYS as pyco2
 import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
+from cartopy.io.shapereader import Reader
+from shapely.ops import unary_union
 
 
 def add_map_features(axis, extent, edgecolor=None, oceancolor='none'):
@@ -73,6 +75,40 @@ def calc_ta_gom(temp, sal):
     ta = 2289 + (0.758 * tempn) + (69.2 * saln)
 
     return ta
+
+
+def return_noaa_polygons():
+    """
+    Combine multiple strata levels defined in the NOAA bottom trawl survey strata downloaded from
+    https://github.com/NOAA-EDAB/FisheryConditionLinks/tree/master/NES_BOTTOM_TRAWL_STRATA
+    for the NYB region into inshore, midshelf, and offshore. STRATA mapping from Laura Nazzaro.
+    """
+    shpfile = Reader(
+        '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/NES_BOTTOM_TRAWL_STRATA/NES_BOTTOM_TRAWL_STRATA.shp')
+    shplist = list(shpfile.records())
+
+    strata_mapping = dict(
+        inshore=dict(
+            snum=[3150, 3160, 3170, 3180, 3190, 3200, 3120, 3130, 3140, 3100, 3090, 3110, 3060, 3070, 3080],
+            color='#9e36d7ff',
+            poly=[]
+        ),  # purple
+        midshelf=dict(snum=[1730, 1010], color='#d7369eff', poly=[]),  # pink
+        offshore=dict(snum=[1740, 1750, 1760, 1020, 1030, 1040], color='#95c983ff', poly=[])  # green
+    )
+
+    # combine regions to NYB inshore, midshelf, offshore
+    for region_code, sm in strata_mapping.items():
+        polys = []
+        for sl in shplist:
+            if sl.attributes['STRATA'] in sm['snum']:
+                poly = sl.geometry
+                polys.append(poly)
+
+        outside_poly = unary_union(polys)
+        strata_mapping[region_code]['poly'] = outside_poly
+
+    return strata_mapping
 
 
 def run_co2sys_ta_ph(ta, ph, sal, temp=25, press_dbar=0):

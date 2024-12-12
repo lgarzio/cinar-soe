@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/14/2024
-Last modified: 11/14/2024
+Last modified: 12/12/2024
 Plot bottom temperature data from GLORYS12V1 (Global Ocean Physics Reanalysis)
 https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_PHY_001_030/description
 Monthly averaged files were downloaded (3 months per file = 1 season), and seasonal averages were calculated and plotted.
@@ -27,9 +27,18 @@ pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in
 plt.rcParams.update({'font.size': 15})
 
 
-def main(filedir, ab, stype, clims, diff_lims, savedir):
-    sdir_avgs = os.path.join(savedir, 'seasonal_avgs')
-    sdir_anom = os.path.join(savedir, 'seasonal_anomalies')
+def main(filedir, ab, addns, clims, diff_lims, savedir):
+    if ab:
+        sdir_avgs = os.path.join(savedir, 'with_boxes', 'seasonal_avgs')
+        sdir_anom = os.path.join(savedir, 'with_boxes', 'seasonal_anomalies')
+    elif addns:
+        sdir_avgs = os.path.join(savedir, 'with_strata', 'seasonal_avgs')
+        sdir_anom = os.path.join(savedir, 'with_strata', 'seasonal_anomalies')
+    else:
+        sdir_avgs = os.path.join(savedir, 'seasonal_avgs')
+        sdir_anom = os.path.join(savedir, 'seasonal_anomalies')
+    os.makedirs(sdir_avgs, exist_ok=True)
+    os.makedirs(sdir_anom, exist_ok=True)
 
     season_mapping = dict(
         DJF=dict(name='Winter', months=[12, 1, 2]),
@@ -142,10 +151,13 @@ def main(filedir, ab, stype, clims, diff_lims, savedir):
                     transform=ccrs.PlateCarree(), zorder=10)
             ax.fill(nj_box_lons, nj_box_lats, color='none', edgecolor='cyan', linewidth=2.5,
                     transform=ccrs.PlateCarree(), zorder=10)
-
-            sfile = os.path.join(sdir_avgs, f'{season.lower()}{str(y)}_bottom_temp-boxes.png')
-        else:
-            sfile = os.path.join(sdir_avgs, f'{season.lower()}{str(y)}_bottom_temp.png')
+        if addns:  # add NOAA strata to maps
+            strata_mapping = cf.return_noaa_polygons()
+            for key, values in strata_mapping.items():
+                outside_poly = values['poly']
+                xx, yy = outside_poly.exterior.xy
+                ax.plot(xx, yy, color='cyan', lw=2, transform=ccrs.PlateCarree(), zorder=20)
+        sfile = os.path.join(sdir_avgs, f'{season.lower()}{str(y)}_bottom_temp.png')
         plt.savefig(sfile, dpi=200)
         plt.close()
 
@@ -214,10 +226,13 @@ def main(filedir, ab, stype, clims, diff_lims, savedir):
                     transform=ccrs.PlateCarree(), zorder=10)
             ax.fill(nj_box_lons, nj_box_lats, color='none', edgecolor='cyan', linewidth=2.5,
                     transform=ccrs.PlateCarree(), zorder=10)
-
-            sfile = os.path.join(sdir_avgs, f'{season.lower()}-bottom_temp-climatology-boxes.png')
-        else:
-            sfile = os.path.join(sdir_avgs, f'{season.lower()}-bottom_temp-climatology.png')
+        if addns:  # add NOAA strata to maps
+            strata_mapping = cf.return_noaa_polygons()
+            for key, values in strata_mapping.items():
+                outside_poly = values['poly']
+                xx, yy = outside_poly.exterior.xy
+                ax.plot(xx, yy, color='cyan', lw=2, transform=ccrs.PlateCarree(), zorder=20)
+        sfile = os.path.join(sdir_avgs, f'{season.lower()}-bottom_temp-climatology.png')
         plt.savefig(sfile, dpi=200)
         plt.close()
 
@@ -267,10 +282,13 @@ def main(filedir, ab, stype, clims, diff_lims, savedir):
                         transform=ccrs.PlateCarree(), zorder=10)
                 ax.fill(nj_box_lons, nj_box_lats, color='none', edgecolor='cyan', linewidth=2.5,
                         transform=ccrs.PlateCarree(), zorder=10)
-
-                sfile = os.path.join(sdir_anom, f'{season.lower()}{year}-bottom_temp-anomaly-boxes.png')
-            else:
-                sfile = os.path.join(sdir_anom, f'{season.lower()}{year}-bottom_temp-anomaly.png')
+            if addns:  # add NOAA strata to maps
+                strata_mapping = cf.return_noaa_polygons()
+                for key, values in strata_mapping.items():
+                    outside_poly = values['poly']
+                    xx, yy = outside_poly.exterior.xy
+                    ax.plot(xx, yy, color='cyan', lw=2, transform=ccrs.PlateCarree(), zorder=20)
+            sfile = os.path.join(sdir_anom, f'{season.lower()}{year}-bottom_temp-anomaly.png')
             plt.savefig(sfile, dpi=200)
             plt.close()
 
@@ -278,8 +296,8 @@ def main(filedir, ab, stype, clims, diff_lims, savedir):
 if __name__ == '__main__':
     filedir = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/cmems_data/glorys'
     add_boxes = False
-    stype = 'bottom'
+    add_noaa_strata = True  # add noaa strata inshore/midshelf/offshore
     color_lims = [2, 22]  # None bottom temp: [2, 22]
     diff_lims = [-5, 5, 40]  # [min, max, bins] for difference plots
     save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/plots2025/bottom_temp'
-    main(filedir, add_boxes, stype, color_lims, diff_lims, save_directory)
+    main(filedir, add_boxes, add_noaa_strata, color_lims, diff_lims, save_directory)

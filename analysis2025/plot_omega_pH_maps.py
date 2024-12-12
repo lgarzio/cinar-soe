@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 11/11/2024
+Last modified: 12/12/2024
 Plot bottom/surface omega/pH maps using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 """
@@ -22,7 +22,7 @@ pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in
 plt.rcParams.update({'font.size': 15})
 
 
-def main(cruise_file, glider_file, ab, stype, variable, vers, clims, savedir):
+def main(cruise_file, glider_file, ab, addns, stype, variable, vers, clims, savedir):
     savedir = os.path.join(savedir, f'{stype}_{variable}')
     season_mapping = {'DJF': 'Winter',
                       'MAM': 'Spring',
@@ -142,6 +142,14 @@ def main(cruise_file, glider_file, ab, stype, variable, vers, clims, savedir):
 
             sfile = os.path.join(savedir, 'with_boxes', f'{stype}_{variable}_map_{min_year}-{max_year}-{season.lower()}-{vers}-boxes.png')
             os.makedirs(os.path.join(savedir, 'with_boxes'), exist_ok=True)
+        elif addns:  # add NOAA strata to maps
+            strata_mapping = cf.return_noaa_polygons()
+            for key, values in strata_mapping.items():
+                outside_poly = values['poly']
+                x, y = outside_poly.exterior.xy
+                ax.plot(x, y, color='cyan', lw=2, transform=ccrs.PlateCarree(), zorder=20)
+            sfile = os.path.join(savedir, 'with_strata', f'{stype}_{variable}_map_{min_year}-{max_year}-{season.lower()}-{vers}-strata.png')
+            os.makedirs(os.path.join(savedir, 'with_strata'), exist_ok=True)
         else:
             sfile = os.path.join(savedir, f'{stype}_{variable}_map_{min_year}-{max_year}-{season.lower()}-{vers}.png')
         plt.savefig(sfile, dpi=200)
@@ -201,6 +209,12 @@ def main(cruise_file, glider_file, ab, stype, variable, vers, clims, savedir):
                     #         transform=ccrs.PlateCarree(), zorder=10)
                     ax.fill(nj_box_lons, nj_box_lats, color='none', edgecolor='cyan', linewidth=3,
                             transform=ccrs.PlateCarree(), zorder=10)
+                elif addns:  # add NOAA strata to maps
+                    strata_mapping = cf.return_noaa_polygons()
+                    for key, values in strata_mapping.items():
+                        outside_poly = values['poly']
+                        x, y = outside_poly.exterior.xy
+                        ax.plot(x, y, color='cyan', lw=2, transform=ccrs.PlateCarree(), zorder=20)
 
                 if len(df_season_year) > 0:
                     versions = ['b', 'c', 'd', 'e', 'f', 'g']
@@ -213,6 +227,10 @@ def main(cruise_file, glider_file, ab, stype, variable, vers, clims, savedir):
                     if ab:
                         sfile = os.path.join(savedir_yearly, 'with_boxes', f'{stype}_{variable}_map_{y}_{season.lower()}-{v}-boxes.png')
                         os.makedirs(os.path.join(savedir_yearly, 'with_boxes'), exist_ok=True)
+                    elif addns:
+                        sfile = os.path.join(savedir_yearly, 'with_strata',
+                                             f'{stype}_{variable}_map_{min_year}-{max_year}-{season.lower()}-{vers}-strata.png')
+                        os.makedirs(os.path.join(savedir_yearly, 'with_strata'), exist_ok=True)
                     else:
                         sfile = os.path.join(savedir_yearly, f'{stype}_{variable}_map_{y}-{season.lower()}-{v}.png')
                     plt.savefig(sfile, dpi=200)
@@ -269,10 +287,11 @@ if __name__ == '__main__':
     glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/glider_based_bottom_OA_data_2019_2024.nc'  # bottom
     #cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_surface_OA_data_2004_2023.nc'  # surface
     #glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/glider_based_surface_OA_data_2019_2024.nc'  # surface
-    add_boxes = True
+    add_boxes = False
+    add_noaa_strata = True  # add noaa strata inshore/midshelf/offshore
     stype = 'bottom'  # surface bottom
     variable = 'omega'  # pH omega
     version = 'all'  # glider_only vessel_only all
     color_lims = [0.8, 2.2]  # None pH: [7.7, 8.1]  omega: [0.8, 2.2]
     save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/plots2025'
-    main(cruise_data, glider_data, add_boxes, stype, variable, version, color_lims, save_directory)
+    main(cruise_data, glider_data, add_boxes, add_noaa_strata, stype, variable, version, color_lims, save_directory)
