@@ -70,14 +70,18 @@ def main(savedir, min_time, max_time):
     kwargs['min_lat'] = 35
     kwargs['max_lat'] = 45
 
-    server = 'https://gliders.ioos.us/erddap'
+    #server = 'https://gliders.ioos.us/erddap'
+    server = 'https://slocum-data.marine.rutgers.edu/erddap'
     glider_ids = return_glider_ids(server, kwargs)
 
     # for each glider deployment, figure out if dissolved oxygen data are available
     glider_do_ids = dict()
     for gi in glider_ids:
+        if '-trajectory-raw-' in gi:
+            continue
         ds_vars = return_dataset_variables(server, gi)
         oxygen_vars = [var for var in ds_vars if 'oxygen' in var.lower()]
+        #print(oxygen_vars)
         if len(oxygen_vars) > 0:
             glider_do_ids[gi] = oxygen_vars
 
@@ -87,9 +91,17 @@ def main(savedir, min_time, max_time):
     glider_do_ids_final = {key: value for key, value in glider_do_ids.items() if key not in duplicates}
 
     # download the datasets to your local machine
-    vars = ['time', 'latitude', 'longitude', 'depth', 'profile_id', 'temperature']
+    #vars = ['time', 'latitude', 'longitude', 'depth', 'profile_id', 'temperature']
+    vars = ['time', 'latitude', 'longitude', 'depth', 'profile_time', 'profile_lon', 'profile_lat', 'temperature']
+    skip = ['maracoos_04-20241203T1457-profile-sci-delayed', 'maracoos_05-20250404T1319-profile-sci-delayed',
+            'maracoos_06-20250116T1522-profile-sci-rt', 'maracoos_06-20250520T1554-profile-sci-rt',
+            'maracoos_06-20250929T1630-profile-sci-rt', 'ru32-20250716T1541-profile-sci-delayed']
     for gi, oxygen_vars in glider_do_ids_final.items():
+        if gi in skip:
+            print(f'skipping {gi}')
+            continue
         print(f'downloading {gi}')
+        
         downloadvars = vars + oxygen_vars
         
         kwargs = dict()
@@ -101,7 +113,7 @@ def main(savedir, min_time, max_time):
 
 
 if __name__ == '__main__':
-    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/dissolved_oxygen_gliders/files'
+    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/dissolved_oxygen_gliders/files/rutgers'
     start = "2025-01-01T00:00:00Z"
-    end = "2025-12-31T23:59:59Z"
+    end = "2025-10-22T23:59:59Z"
     main(save_directory, start, end)
