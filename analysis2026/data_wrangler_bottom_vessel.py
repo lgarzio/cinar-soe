@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 11/6/2025
+Last modified: 11/18/2025
 Grab vessel-based bottom-water pH and omega data from CODAP-NA and additional ECOMON and ECOA datasets. Export as NetCDF.
 CODAP-NA v2021 dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 Additional cruise datasets were downloaded from the NCEI OCADs data portal
@@ -339,7 +339,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, savedir):
                          'ECOA3': 283329,
                          'HB2302': 296717,
                          'HB2303': 302973,
-                         'PC2305': 303262}
+                         'PC2305': 303262,
+                         'HB2401': 000000,
+                         'HB2403': 000000,
+                         'HB2406': 000000}
 
     # additional datasets that aren't included in CODAP v2021
     for ef in extra_files:
@@ -571,7 +574,10 @@ if __name__ == '__main__':
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0296717-discrete-profiles/33HH20230609_HB2302_Data.csv',
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ECOA/ECOA-3/Accession_0283329-discrete/ECOA_3_CTD_MasterDataSheet_09_26_2023_Accession_0283329-mod.csv',
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0302973-discrete-profiles/33HH20230808_HB2303_Data.csv',
-        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0303262-discrete-profiles/334B20231027_PC2305_Data.csv'
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0303262-discrete-profiles/334B20231027_PC2305_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240217_HB2401_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240526_HB2403_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240812_HB2406_Data.csv'
         ]
     save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc'
     main(lons, lats, codap, other, save_directory)
