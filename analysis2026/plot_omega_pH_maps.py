@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 11/13/2025
+Last modified: 11/18/2025
 Plot bottom/surface omega/pH maps using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 """
@@ -284,9 +284,9 @@ def main(cruise_file, glider_file, ab, addns, stype, variable, vers, clims, save
 
 
 if __name__ == '__main__':
-    cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_bottom_OA_data_2007_2023.nc'  # bottom
+    cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_bottom_OA_data_2007_2024.nc'  # bottom
     glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/glider_based_bottom_OA_data_2019_2025.nc'  # bottom
-    #cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_surface_OA_data_2004_2023.nc'  # surface
+    #cruise_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_surface_OA_data_2004_2024.nc'  # surface
     #glider_data = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/output_nc/glider_based_surface_OA_data_2019_2025.nc'  # surface
     add_boxes = False
     add_noaa_strata = False  # add noaa strata inshore/midshelf/offshore
