@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 11/18/2025
+Last modified: 12/1/2025
 Grab vessel-based surface-water pH and omega data from CODAP-NA and additional ECOMON and ECOA datasets. Export as NetCDF.
 CODAP-NA v2021 dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
 Additional cruise datasets were downloaded from the NCEI OCADs data portal
@@ -301,21 +301,22 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
 #######################################################################################################################
     # add extra datasets
-    accession_mapping = {'HB1902': 209045,
-                         'GU1902': 209156,
-                         'GU1905': 210238,
-                         'GU2102': 248269,
-                         'PC2104': 249432,
-                         'PC2106': 249517,
-                         'PC2205': 283758,
-                         'HB2204': 276023,
-                         'ECOA3': 283329,
-                         'HB2302': 296717,
-                         'HB2303': 302973,
-                         'PC2305': 303262,
-                         'HB2401': 000000,
-                         'HB2403': 000000,
-                         'HB2406': 000000}
+    accession_mapping = {'HB1902': '0209045',
+                         'GU1902': '0209156',
+                         'GU1905': '0210238',
+                         'GU2102': '0248269',
+                         'PC2104': '0249432',
+                         'PC2106': '0249517',
+                         'PC2205': '0283758',
+                         'HB2204': '0276023',
+                         'ECOA3': '0283329',
+                         'HB2302': '0296717',
+                         'HB2303': '0302973',
+                         'PC2305': '0303262',
+                         'HB2401': '0309660',
+                         'HB2403': '0309662',
+                         'HB2406': '0309663',
+                         'PC2406': '0309698'}
 
     # additional datasets that aren't included in CODAP v2021
     for ef in extra_files:
@@ -466,9 +467,9 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
 ########################################################################################################################
     # additional underway datasets
-    accession_underway_mapping = {'ECOA-1': 157389,
-                                  'ECOA-2': 215462,
-                                  'ECOA3': 295751
+    accession_underway_mapping = {'ECOA-1': '0157389',
+                                  'ECOA-2': '0215462',
+                                  'ECOA3': '0295751'
                                   }
 
     for uf in underway_files:
@@ -616,7 +617,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     # Add compression to all variables
     encoding = {}
     for k in outds.data_vars:
-        if k not in ['data_source', 'cruise', 'obs_type']:
+        if k not in ['data_source', 'cruise', 'obs_type', 'accession']:
             encoding[k] = {'zlib': True, 'complevel': 1, '_FillValue': -999}
 
     encoding['time'] = dict(zlib=False, _FillValue=False, dtype=np.double)
@@ -652,9 +653,10 @@ if __name__ == '__main__':
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ECOA/ECOA-3/Accession_0283329-discrete/ECOA_3_CTD_MasterDataSheet_09_26_2023_Accession_0283329-mod.csv',
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0302973-discrete-profiles/33HH20230808_HB2303_Data.csv',
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2023/Accession_0303262-discrete-profiles/334B20231027_PC2305_Data.csv',
-        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240217_HB2401_Data.csv',
-        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240526_HB2403_Data.csv',
-        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ecomon_prelim/33HH20240812_HB2406_Data.csv'
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2024/Accession_0309660-discrete-profiles/33HH20240217_HB2401_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2024/Accession_0309662-discrete-profiles/33HH20240526_HB2403_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2024/Accession_0309663-discrete-profiles/33HH20240812_HB2406_Data.csv',
+        '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/EcoMon/2024/Accession_0309698-discrete-profiles/334B20241027_PC2406_Data.csv'
         ]
     other_underway = [
         '/Users/garzio/Documents/rucool/Saba/OA_cruise_data/ECOA/ECOA-1/Accession_0157389-underway/Discrete_Underway_Data_12082016_Accession_0157389-mod.csv',
