@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 3/8/2021
-Last modified: 12/12/2024
+Last modified: 6/26/2026
 """
 
 import PyCO2SYS as pyco2
@@ -10,6 +10,7 @@ import cartopy.feature as cfeature
 from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.io.shapereader import Reader
 from shapely.ops import unary_union
+import numpy as np
 
 
 def add_map_features(axis, extent, edgecolor=None, oceancolor='none'):
@@ -109,6 +110,123 @@ def return_noaa_polygons():
         strata_mapping[region_code]['poly'] = outside_poly
 
     return strata_mapping
+
+
+def return_bottom_data(df,
+                       bathymetry_file,
+                       profile_coords,
+                       depth_col='Depth',
+                       bottom_depth_col='Depth_bottom',
+                       pH_col='pH', 
+                       omega_col='Aragonite', 
+                       omega_est_col='aragonite_estimated', 
+                       temp_col='CTDTEMP_ITS90'):
+    """
+    Returns data points collected at the bottom of a profile
+    :param df: dataframe containing data for one profile
+    :param bathymetry_file: xarray dataset containing global bathymetry data
+    :param profile_coords: tuple containing the coordinates of the profile (lon, lat)
+    :param depth_col: name of the column containing depth data, default='Depth'
+    :param bottom_depth_col: name of the column containing bottom depth data, default='Depth_bottom'
+    :param pH_col: name of the column containing pH data, default='pH'
+    :param omega_col: name of the column containing omega data, default='Aragonite'
+    :param omega_est_col: name of the column containing estimated omega data, default='aragonite_estimated'
+    :param temp_col: name of the column containing temperature data, default='CTDTEMP_ITS90'
+    """
+    max_depth = np.nanmax(df[depth_col])
+    if max_depth > 10:  # sampling depth has to be >10m
+        dfc = df[df[depth_col] == max_depth]
+        try:
+            if dfc[bottom_depth_col].values[0] != -999:  # compare to the recorded station depth
+                station_water_depth = dfc[bottom_depth_col].values[0]
+            else:  # compare to the global bathymetry file
+                lat_idx = abs(bathymetry_file.lat.values - profile_coords[1]).argmin()
+                lon_idx = abs(bathymetry_file.lon.values - profile_coords[0]).argmin()
+                station_water_depth = -bathymetry_file.elevation[lat_idx, lon_idx].values
+        except KeyError:
+            lat_idx = abs(bathymetry_file.lat.values - profile_coords[1]).argmin()
+            lon_idx = abs(bathymetry_file.lon.values - profile_coords[0]).argmin()
+            station_water_depth = -bathymetry_file.elevation[lat_idx, lon_idx].values
+
+        # if the sample is within +/- 20% of the water column, keep the value
+        depth_threshold = [station_water_depth * .8, station_water_depth * 1.2]
+        if np.logical_and(max_depth > depth_threshold[0], max_depth < depth_threshold[1]):
+            if len(dfc) > 1:
+                # drop lines where measured omega isn't available
+                dfc = dfc[dfc[omega_col] > 0]
+                if len(dfc) < 1:
+                    raise(ValueError)
+
+            pH_bottom = np.nanmedian(np.array(dfc[pH_col]))
+
+            omega_bottom = np.nanmedian(np.array(dfc[omega_col]))
+
+            # if measured omega isn't available (-999) use estimated aragonite
+            if bool(omega_bottom < 0):
+                omega_bottom = np.nanmedian(np.array(dfc[omega_est_col]))
+
+            temp_bottom = np.nanmedian(np.array(dfc[temp_col]))
+            if bool(temp_bottom < 0):
+                temp_bottom = np.nan
+
+        else:
+            pH_bottom = np.nan
+            omega_bottom = np.nan
+            temp_bottom = np.nan
+
+    else:
+        station_water_depth = np.nan
+        pH_bottom = np.nan
+        omega_bottom = np.nan
+        temp_bottom = np.nan
+
+    return max_depth, pH_bottom, omega_bottom, temp_bottom, station_water_depth
+
+
+def return_surface_data(df, 
+                        depth_col='Depth', 
+                        pH_col='pH', 
+                        omega_col='Aragonite', 
+                        omega_est_col='aragonite_estimated',
+                        temp_col='CTDTEMP_ITS90'):
+    """
+    Returns data points collected at the surface of a profile
+    :param df: dataframe containing data for one profile
+    :param depth_col: name of the column containing depth data, default='Depth'
+    :param pH_col: name of the column containing pH data, default='pH'
+    :param omega_col: name of the column containing omega data, default='Aragonite'
+    :param omega_est_col: name of the column containing estimated omega data, default='aragonite_estimated'
+    """
+    min_depth = np.nanmin(df[depth_col])
+    if bool(min_depth < 10):
+        dfc = df[df[depth_col]== min_depth]
+
+        # drop lines where measured omega isn't available
+        if len(dfc) > 1:
+            print('check')
+            dfc = dfc[dfc[omega_col] > 0]
+
+            # if you removed all rows of data, go back to the original
+            if len(dfc) < 1:
+                dfc = df[df[depth_col] == min_depth]
+
+        pH_surface = np.nanmedian(np.array(dfc[pH_col]))
+
+        omega_surface = np.nanmedian(np.array(dfc[omega_col]))
+
+        # if measured omega isn't available (-999) use estimated aragonite
+        if bool(omega_surface < 0):
+            omega_surface = np.nanmedian(np.array(dfc[omega_est_col]))
+
+        temp_surface = np.nanmedian(np.array(dfc[temp_col]))
+        if bool(temp_surface < 0):
+            temp_surface = np.nan
+    else:
+        pH_surface = np.nan
+        omega_surface = np.nan
+        temp_surface = np.nan
+    
+    return min_depth, pH_surface, omega_surface, temp_surface
 
 
 def run_co2sys_ta_ph(ta, ph, sal, temp=25, press_dbar=0):

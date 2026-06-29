@@ -1,0 +1,135 @@
+data_source:
+  dtype: object
+  dims: time
+  attrs:
+    units: '1'
+    comment: Source of data
+cruise:
+  dtype: object
+  dims: time
+  attrs:
+    units: '1'
+    comment: Cruise ID
+obs_type:
+  dtype: object
+  dims: time
+  attrs:
+    units: '1'
+    comment: Observation type
+accession:
+  dtype: int32
+  dims: time
+  attrs:
+    units: '1'
+    comment: NCEI Accession number
+lat:
+  dtype: float32
+  dims: time
+  attrs:
+    units: degrees_north
+    long_name: Latitude
+lon:
+  dtype: float32
+  dims: time
+  attrs:
+    units: degrees_east
+    long_name: Longitude
+depth_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Depth
+    description: Depth at which the surface sample was collected
+depth_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Depth
+    description: Depth at which the bottom sample was collected
+station_water_depth:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Bottom Depth
+    description: Depth of water column at the sampling station
+    comment: From the original data source, when provided. When not provided, bottom
+      depth was determined using the sample coordinates and GEBCO’s gridded global
+      bathymetry (https://download.gebco.net/)
+pH_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Surface pH
+    comment: For the CODAP-NA v2021 dataset, pH_TS_insitu_measured was used when
+      available. Otherwise, pH_TS_insitu_calculated was used. For the datasets downloaded
+      from NCEI, pH at in situ temperature, pressure, and salinity were calculated
+      from pH_TS_20C using PyCO2SYS.
+    description: Surface pH is the shallowest measurement of a vertical CTD/Rosette
+      cast if the sample depth was < 10m. For stations with multiple samples at
+      the shallowest depth, the median value was calculated.
+pH_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Bottom pH
+    comment: For the CODAP-NA v2021 dataset, pH_TS_insitu_measured was used when
+      available. Otherwise, pH_TS_insitu_calculated was used. For the datasets downloaded
+      from NCEI, pH at in situ temperature, pressure, and salinity were calculated
+      from pH_TS_20C using PyCO2SYS.
+    description: Bottom pH is the deepest measurement of a vertical CTD/Rosette
+      cast where water samples were collected for profiles deeper than 10m, provided
+      the sampling depth was no shallower than the bottom 20% of total water column
+      depth. For stations with multiple samples at the deepest measurement, the
+      median value was calculated.
+omega_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Surface Aragonite Saturation State
+    description: Surface aragonite saturation state is the shallowest measurement
+      of a vertical CTD/Rosette cast if the sample depth was < 10m. For stations
+      with multiple samples at the shallowest depth, the median value was calculated.
+    comment: Aragonite saturation state from the original data source, when available.
+      When not available, calculated using PyCO2SYS (Humphreys et al. 2020) with
+      inputs of pressure, temperature, salinity, total alkalinity, and pH.
+omega_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Bottom Aragonite Saturation State
+    description: Bottom aragonite saturation state is the deepest measurement of
+      a vertical CTD/Rosette cast where water samples were collected for profiles
+      deeper than 10m, provided the sampling depth was no shallower than the bottom
+      20% of total water column depth. For stations with multiple samples at the
+      deepest measurement, the median value was calculated.
+    comment: Bottom aragonite saturation state from the original data source, when
+      available. When not available, calculated using PyCO2SYS (Humphreys et al.
+      2020) with inputs of pressure, temperature, salinity, total alkalinity, and
+      pH.
+temperature_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: C
+    long_name: Surface Temperature
+    description: Surface seawater temperature is the shallowest measurement of a
+      vertical CTD/Rosette cast if the sample depth was < 10m. For stations with
+      multiple samples at the shallowest depth, the median value was calculated.
+temperature_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: C
+    long_name: Bottom Temperature
+    description: Bottom seawater temperature is the deepest measurement of a vertical
+      CTD/Rosette cast where water samples were collected for profiles deeper than
+      10m, provided the sampling depth was no shallower than the bottom 20% of total
+      water column depth. For stations with multiple samples at the deepest measurement,
+      the median value was calculated.
