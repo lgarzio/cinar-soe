@@ -1,4 +1,4 @@
-name: cinar-soe
+name: cinar-soe-copy
 channels:
   - conda-forge
   - defaults
@@ -13,3 +13,4 @@ dependencies:
   - cool_maps==1.0.1
   - pyco2sys==1.8.3.3
   - erddapy==2.2.4
+  - pyyaml==6.0.3
