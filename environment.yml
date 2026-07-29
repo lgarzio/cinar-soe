@@ -1,4 +1,4 @@
-name: cinar-soe-copy
+name: cinar-soe
 channels:
   - conda-forge
   - defaults
