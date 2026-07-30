@@ -1,0 +1,96 @@
+deployment:
+  dtype: object
+  dims: time
+  attrs:
+    units: '1'
+    comment: Cruise ID
+lat:
+  dtype: float32
+  dims: time
+  attrs:
+    units: degrees_north
+    long_name: Latitude
+lon:
+  dtype: float32
+  dims: time
+  attrs:
+    units: degrees_east
+    long_name: Longitude
+depth_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Depth
+    description: Depth at which the surface sample was collected
+depth_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Depth
+    description: Depth at which the bottom sample was collected
+station_water_depth:
+  dtype: float32
+  dims: time
+  attrs:
+    units: m
+    long_name: Bottom Depth
+    description: Depth of water column at the sampling station
+    comment: Bottom depth was calculated using the sample coordinates and GEBCO’s gridded global
+      bathymetry (https://download.gebco.net/)
+pH_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Surface pH
+    description: Surface pH is the the median of the values recorded at the top of a glider profile 
+      (between 2-4m depth), provided the glider profile reached at least 10m depth.
+pH_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Bottom pH
+    description: Bottom pH is the the median of the values within the deepest 1m of a glider 
+      profile, provided the sampling depth was no shallower than the bottom 20% of total 
+      water column depth.
+omega_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Surface Aragonite Saturation State
+    description: Surface aragonite saturation state is the the median of the values recorded at the 
+      top of a glider profile (between 2-4m depth), provided the glider profile reached at least 10m depth.
+    comment: Calculated using PyCO2SYS (Humphreys et al. 2020) with inputs of 
+      pressure, temperature, salinity, total alkalinity, and pH.
+omega_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Bottom Aragonite Saturation State
+    description: Bottom aragonite saturation state is the the median of the values within the deepest 
+      1m of a glider profile, provided the sampling depth was no shallower than the bottom 
+      20% of total water column depth.
+    comment: Calculated using PyCO2SYS (Humphreys et al. 2020) with inputs of 
+      pressure, temperature, salinity, total alkalinity, and pH.
+temperature_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: C
+    long_name: Surface Temperature
+    description: Surface temperature is the the median of the values recorded at the 
+      top of a glider profile (between 2-4m depth), provided the glider profile reached at least 10m depth.
+temperature_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: C
+    long_name: Bottom Temperature
+    description: Bottom temperature is the the median of the values within the deepest 
+      1m of a glider profile, provided the sampling depth was no shallower than the bottom 
+      20% of total water column depth.
