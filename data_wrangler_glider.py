@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/23/2024
-Last modified: 7/29/2026
+Last modified: 8/5/2026
 Grab bottom- and surface-water pH and omega data from glider datasets and export as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
@@ -49,20 +49,12 @@ def main(filedir, savedir):
 
         # initialize dictionary to append surface and bottom pH and aragonite data from glider deployment
         data = {
-            "coords": {
-                "time": {"dims": "time",
-                            "data": np.array([], dtype='float32'),
-                            "attrs": {
-                                "units": "seconds since 1970-01-01T00:00:00Z",
-                                "time_origin": "01-JAN-1970 00:00:00"
-                            }
-                            }
-            },
             "attrs": {
                 "comment": "Synthesis of surface and bottom pH and aragonite saturation state data from glider-based measurements "
                             "that were spatially limited to the U.S. Northeast Shelf.",
             },
             "dims": "time",
+            "coords": {},
             "data_vars": {}
         }
         
@@ -72,7 +64,10 @@ def main(filedir, savedir):
         for varname, var_dict in config_dict.items():
             dtype = var_dict.pop('dtype')
             var_dict['data'] = np.array([], dtype=dtype)
-            data['data_vars'][varname] = var_dict
+            if varname == 'time':
+                data['coords'][varname] = var_dict
+            else:
+                data['data_vars'][varname] = var_dict
 
         ds = xr.open_dataset(gf)
         deployment = ds.title.split(' ')[0].split('-delayed')[0]

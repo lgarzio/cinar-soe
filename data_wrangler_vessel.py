@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 7/27/2026
+Last modified: 8/5/2026
 Grab vessel-based surface- and bottom-water pH and omega data from CODAP-NA and additional ECOMON 
 and ECOA datasets. Export as NetCDF.
 CODAP-NA v2021 dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
@@ -55,15 +55,6 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
     # initialize dictionary to append surface and bottom data from cruises (CODAPv2021, ECOMON and ECOA datasets)
     data = {
-        "coords": {
-            "time": {"dims": "time",
-                     "data": np.array([], dtype='float32'),
-                     "attrs": {
-                         "units": "seconds since 1970-01-01T00:00:00Z",
-                         "time_origin": "01-JAN-1970 00:00:00"
-                        }
-                     }
-        },
         "attrs": {
             "comment": "Synthesis of surface and bottom pH and aragonite saturation state data from vessel-based measurements "
                        "that were spatially limited to the U.S. Northeast Shelf.",
@@ -73,6 +64,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                             "(https://www.ncei.noaa.gov/access/ocean-carbon-acidification-data-system-portal/)"
         },
         "dims": "time",
+        "coords": {},
         "data_vars": {}
     }
     
@@ -80,7 +72,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     for varname, var_dict in config_dict.items():
         dtype = var_dict.pop('dtype')
         var_dict['data'] = np.array([], dtype=dtype)
-        data['data_vars'][varname] = var_dict
+        if varname == 'time':
+            data['coords'][varname] = var_dict
+        else:
+            data['data_vars'][varname] = var_dict
 
 #######################################################################################################################
     # get CODAP data
@@ -149,8 +144,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
     # additional datasets that aren't included in CODAP v2021
     for ef in extra_files:
-        print(ef) # TODO 33GG20210514-GU2102_data.csv should have flow-thru and niskin sampling ########
-        df = pd.read_csv(ef)  # TODO 33GG20210514-GU2102_data.csv combine temperature and salinity columns ########
+        df = pd.read_csv(ef)
         df.replace(-999, np.nan, inplace=True)
 
         # get cruise ID
