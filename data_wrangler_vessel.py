@@ -108,7 +108,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
             data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'],
                                                                     'CODAP_NA_v2021')
-            data['data_vars']['cruise']['data'] = np.append(data['data_vars']['cruise']['data'], cruise)
+            data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], cruise)
             data['data_vars']['obs_type']['data'] = np.append(data['data_vars']['obs_type']['data'],
                                                                 dfc_profile.Observation_type.values[0])
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'],
@@ -325,7 +325,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             # add data to dictionary
             data['coords']['time']['data'] = np.append(data['coords']['time']['data'], tm)
             data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'], 'NCEI-OCADS')
-            data['data_vars']['cruise']['data'] = np.append(data['data_vars']['cruise']['data'], cruise)
+            data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], cruise)
             data['data_vars']['obs_type']['data'] = np.append(data['data_vars']['obs_type']['data'],
                                                                 df_profile.Observation_Type.values[0])
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'], cruise_accession)
@@ -354,7 +354,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['coords']['time']['data'] = np.append(data['coords']['time']['data'], tm)
             data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'], 
                                                                 np.repeat('NCEI-OCADS', len(tm)))
-            data['data_vars']['cruise']['data'] = np.append(data['data_vars']['cruise']['data'], 
+            data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], 
                                                             np.repeat(cruise, len(tm)))
             data['data_vars']['obs_type']['data'] = np.append(data['data_vars']['obs_type']['data'],
                                                                 df_ft.Observation_Type.values)
@@ -481,7 +481,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         data['coords']['time']['data'] = np.append(data['coords']['time']['data'], np.array(tm))
         data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'],
                                                              np.repeat('NCEI-OCADS', len(df.time)))
-        data['data_vars']['cruise']['data'] = np.append(data['data_vars']['cruise']['data'], cruise)
+        data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], cruise)
         data['data_vars']['obs_type']['data'] = np.append(data['data_vars']['obs_type']['data'],
                                                           np.repeat('Flow-through', len(df.time)))
         cruise_accession = accession_underway_mapping[np.unique(cruise)[0]]
@@ -541,7 +541,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     # Add compression to all variables
     encoding = {}
     for k in outds.data_vars:
-        if k not in ['data_source', 'cruise', 'obs_type', 'accession']:
+        if k not in ['data_source', 'cruise_deployment', 'obs_type', 'accession']:
             encoding[k] = {'zlib': True, 'complevel': 1, '_FillValue': -999}
 
     encoding['time'] = dict(zlib=False, _FillValue=False, dtype=np.double)
@@ -554,7 +554,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     ds['year'] = ds['time.year']
     df = ds.to_pandas()
     df.reset_index(inplace=True)
-    summary = df.groupby(['data_source', 'cruise', 'obs_type', 'accession', 'year'], as_index=False).size()
+    summary = df.groupby(['data_source', 'cruise_deployment', 'obs_type', 'accession', 'year'], as_index=False).size()
     summary.sort_values(['data_source', 'year'], inplace=True)
     save_file = os.path.join(savedir, f'vessel_based_OA_source_summary_{start_yr}_{end_yr}.csv')
     summary.to_csv(save_file, index=False)

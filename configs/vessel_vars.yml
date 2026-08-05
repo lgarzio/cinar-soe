@@ -4,12 +4,12 @@ data_source:
   attrs:
     units: '1'
     comment: Source of data
-cruise:
+cruise_deployment:
   dtype: object
   dims: time
   attrs:
     units: '1'
-    comment: Cruise ID
+    comment: Cruise/Deployment ID (either cruise ID or glider deployment ID)
 obs_type:
   dtype: object
   dims: time

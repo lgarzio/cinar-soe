@@ -1,9 +1,9 @@
-deployment:
+cruise_deployment:
   dtype: object
   dims: time
   attrs:
     units: '1'
-    comment: Cruise ID
+    comment: Cruise/Deployment ID (either cruise ID or glider deployment ID)
 lat:
   dtype: float32
   dims: time

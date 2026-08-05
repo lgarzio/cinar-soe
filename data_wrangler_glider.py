@@ -227,7 +227,7 @@ def main(filedir, savedir):
                 # add data to dictionary
                 data['coords']['time']['data'] = np.append(data['coords']['time']['data'], tm)
 
-                data['data_vars']['deployment']['data'] = np.append(data['data_vars']['deployment']['data'], deployment)
+                data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], deployment)
                 
                 data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], depth_surface)
                 data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], depth_bottom)
@@ -274,7 +274,7 @@ def main(filedir, savedir):
         # Add compression to all variables
         encoding = {}
         for k in ds.data_vars:
-            if k not in ['deployment']:
+            if k not in ['cruise_deployment']:
                 encoding[k] = {'zlib': True, 'complevel': 1}
 
         encoding['time'] = dict(zlib=False, _FillValue=False, dtype=np.double)
