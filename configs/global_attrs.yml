@@ -9,3 +9,6 @@ comment: Synthesis of surface and bottom pH and aragonite saturation state data 
 institution: Rutgers University
 program: NOAA Ocean Acidification Program
 project: xxxx
+title: vessel_glider_surface_bottom_OA_data_NES
+history: xx
+Conventions: CF-1.11
