@@ -3,7 +3,7 @@
 """
 Author: Lori Garzio on 10/23/2024
 Last modified: 8/5/2026
-Grab bottom- and surface-water pH and omega data from glider datasets and export as NetCDF.
+Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
 """
@@ -15,7 +15,6 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import xarray as xr
-import statistics
 from collections import OrderedDict
 import functions.common as cf
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
