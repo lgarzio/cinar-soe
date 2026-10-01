@@ -26,6 +26,16 @@ Satellite-derived chlorophyll and sea surface temperature data files were [downl
 ## Bottom temperature data
 Seasonal data files of bottom temperature from the E.U. Copernicus Marine Service Information (CMEMS): [Global Ocean Physics Reanalysis (GLORYS12V1)](https://data.marine.copernicus.eu/product/GLOBAL_MULTIYEAR_PHY_001_030/description) cmems\_mod\_glo\_phy\_my\_0.083deg_P1M-m dataset were [downloaded using the Python Copernicus Marine Toolbox API](https://github.com/lgarzio/copernicus-data).
 
+## Usage
+1. [data_wrangler_codap_v2021.py](https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_codap_v2021.py): Filter the CODAP-NA v2021 dataset to select data within the study region, remove questionable and bad data, and calculate aragonite saturation state if not available. Export the results as a .csv file to be used in the next step.
+
+2. [data_wrangler_vessel.py](https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_vessel.py): Grab vessel-based surface- and bottom-water pH and omega data from CODAP-NA and additional ECOMON and ECOA datasets and export the result as NetCDF. Imports are the .csv export from the previous step as well as additional datasets that were downloaded [NCEI OCADs data portal]
+(https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system).
+
+3. [data_wrangler_glider.py](https://github.com/lgarzio/cinar-soe/blob/master/data_wrangler_glider.py): Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as a separate NetCDF.
+
+4. [merge_glider_vessel_datasets.py](https://github.com/lgarzio/cinar-soe/blob/master/merge_glider_vessel_datasets.py): Combine the glider- and vessel-based datasets generated in the previous steps together to create a single dataset per year. These files are shared via ERDDAP.
+
 ### Citations
 [CODAP-NA](https://essd.copernicus.org/articles/13/2777/2021/): Jiang, L.-Q., Feely, R. A., Wanninkhof, R., Greeley, D., Barbero, L., Alin, S., Carter, B. R., Pierrot, D., Featherstone, C., Hooper, J., Melrose, C., Monacci, N., Sharp, J. D., Shellito, S., Xu, Y.-Y., Kozyr, A., Byrne, R. H., Cai, W.-J., Cross, J., Johnson, G. C., Hales, B., Langdon, C., Mathis, J., Salisbury, J., and Townsend, D. W.: Coastal Ocean Data Analysis Product in North America (CODAP-NA) – an internally consistent data product for discrete inorganic carbon, oxygen, and nutrients on the North American ocean margins, Earth Syst. Sci. Data, 13, 2777–2799, https://doi.org/10.5194/essd-13-2777-2021, 2021.
 
