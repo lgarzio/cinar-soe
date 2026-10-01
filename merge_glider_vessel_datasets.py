@@ -2,8 +2,8 @@
 
 """
 Author: Lori Garzio on 8/5/2026
-Last modified: 8/5/2026
-Coming the glider- and vessel-based datasets together to create a single dataset per year
+Last modified: 10/1/2026
+Combine the glider- and vessel-based datasets together to create a single dataset per year
 of surface and bottom pH and aragonite saturation state data for the U.S. Northeast Shelf.
 """
 
@@ -34,9 +34,22 @@ def main(glider_dir, vessel_file, savedir):
     gcombined = xr.concat(datasets, dim="time", data_vars="all", coords="minimal",
                           compat="override", join="outer", combine_attrs="override")
     gcombined = gcombined.sortby("time")
+    
+    attrs = dict(units='1', long_name='Collection method', comment='Glider or vessel-based data')
+    gcombined["collection_method"] = (
+        "time",
+        np.full(gcombined.sizes["time"], "glider", dtype="<U6"),
+    )
+    gcombined["collection_method"].attrs = attrs
 
     vessel_ds = xr.open_dataset(os.path.join(home_dir, vessel_file))
     vessel_ds = vessel_ds.drop_vars(['data_source', 'obs_type', 'accession'], errors='ignore')
+
+    vessel_ds["collection_method"] = (
+            "time",
+            np.full(vessel_ds.sizes["time"], "vessel", dtype="<U6"),
+        )
+    vessel_ds["collection_method"].attrs = attrs
 
     # combine the glider and vessel datasets
     ds = xr.concat(
@@ -49,8 +62,8 @@ def main(glider_dir, vessel_file, savedir):
         combine_attrs='override',
     ).sortby('time')
 
-    ds['obs'] = ('time', np.arange(ds.sizes['time']))
-    ds['obs'].attrs['long_name'] = 'Observation number'
+    #ds['obs'] = ('time', np.arange(ds.sizes['time']))
+    #ds['obs'].attrs['long_name'] = 'Observation number'
 
     # global attributes
     gafile = os.path.join(os.path.dirname(__file__), 'configs', 'global_attrs.yml')
@@ -64,7 +77,7 @@ def main(glider_dir, vessel_file, savedir):
     # encoding for variables
     encoding = {}
     for k in ds.data_vars:
-        if k not in ['cruise_deployment']:
+        if k not in ['cruise_deployment', 'collection_method']:
             encoding[k] = {'zlib': True, 'complevel': 1}
 
     encoding['time'] = dict(zlib=False, _FillValue=None, dtype=np.double)
@@ -89,8 +102,8 @@ def main(glider_dir, vessel_file, savedir):
             attrs={'units': 'seconds since 1970-01-01 00:00:00', 'standard_name': 'time', 'long_name': 'time'},
         )
 
-        ds_year = ds_year.swap_dims({'time': 'obs'})
-        save_file = os.path.join(savedir, f'{str(year)}_surface_bottom_OA_data.nc')
+        #ds_year = ds_year.swap_dims({'time': 'obs'})
+        save_file = os.path.join(savedir, f'glider_vessel_surface_bottom_OA_data_{str(year)}.nc')
         ds_year.to_netcdf(save_file, encoding=encoding, format='netCDF4', engine='netcdf4', unlimited_dims='time')
 
 
