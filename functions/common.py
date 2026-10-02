@@ -181,7 +181,8 @@ def return_bottom_data(df,
 
             # if measured omega isn't available (-999 or nan) use estimated aragonite
             if np.logical_or(bool(omega_bottom < 0), np.isnan(omega_bottom)):
-                omega_bottom = np.nanmedian(np.array(dfc[omega_est_col]))
+                if omega_est_col is not None:
+                    omega_bottom = np.nanmedian(np.array(dfc[omega_est_col]))
 
             temp_bottom = np.nanmedian(np.array(dfc[temp_col]))
             if bool(temp_bottom < 0):
@@ -221,7 +222,6 @@ def return_surface_data(df,
 
         # drop lines where measured omega isn't available
         if len(dfc) > 1:
-            print('check')
             dfc = dfc[dfc[omega_col] > 0]
 
             # if you removed all rows of data, go back to the original
