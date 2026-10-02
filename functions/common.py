@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 3/8/2021
-Last modified: 6/26/2026
+Last modified: 10/2/2026
 """
 
 import PyCO2SYS as pyco2
@@ -11,6 +11,7 @@ from cartopy.mpl.gridliner import LONGITUDE_FORMATTER, LATITUDE_FORMATTER
 from cartopy.io.shapereader import Reader
 from shapely.ops import unary_union
 import numpy as np
+from erddapy import ERDDAP
 
 
 def add_map_features(axis, extent, edgecolor=None, oceancolor='none'):
@@ -78,6 +79,23 @@ def calc_ta_gom(temp, sal):
     return ta
 
 
+def return_erddap_nc(server, ds_id, variables=None, constraints=None):
+    # get data from ERDDAP server as xarray dataset
+    e = ERDDAP(server=server,
+               protocol='tabledap',
+               response='nc')
+                      
+    e.dataset_id = ds_id
+    if constraints:
+        e.constraints = constraints
+    if variables:
+        e.variables = variables
+    
+    ds = e.to_xarray(requests_kwargs={"timeout": 120})  # timeout 2 minutes
+    ds = ds.sortby(ds.time)
+    return ds
+
+
 def return_noaa_polygons():
     """
     Combine multiple strata levels defined in the NOAA bottom trawl survey strata downloaded from
@@ -137,7 +155,7 @@ def return_bottom_data(df,
     if max_depth > 10:  # sampling depth has to be >10m
         dfc = df[df[depth_col] == max_depth]
         try:
-            if dfc[bottom_depth_col].values[0] != -999:  # compare to the recorded station depth
+            if np.logical_and(dfc[bottom_depth_col].values[0] != -999, ~np.isnan(dfc[bottom_depth_col].values[0])):  # compare to the recorded station depth
                 station_water_depth = dfc[bottom_depth_col].values[0]
             else:  # compare to the global bathymetry file
                 lat_idx = abs(bathymetry_file.lat.values - profile_coords[1]).argmin()
@@ -161,8 +179,8 @@ def return_bottom_data(df,
 
             omega_bottom = np.nanmedian(np.array(dfc[omega_col]))
 
-            # if measured omega isn't available (-999) use estimated aragonite
-            if bool(omega_bottom < 0):
+            # if measured omega isn't available (-999 or nan) use estimated aragonite
+            if np.logical_or(bool(omega_bottom < 0), np.isnan(omega_bottom)):
                 omega_bottom = np.nanmedian(np.array(dfc[omega_est_col]))
 
             temp_bottom = np.nanmedian(np.array(dfc[temp_col]))
