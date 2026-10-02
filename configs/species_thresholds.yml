@@ -1,0 +1,30 @@
+pteropod:
+  long_name: Pteropods
+  omega_sensitivity: 1.5
+  depth_range: [0, 50]
+  lims: [-72, -65, 40.5, 45]
+  plttype: ['surface']
+atlantic_sea_scallop:
+  long_name: Atlantic Sea Scallop
+  omega_sensitivity: 1.1
+  depth_range: [25, 200]
+  lims: [-78, -68, 36, 42]
+  plttype: ['bottom']
+longfin_squid:
+  long_name: Longfin Squid
+  omega_sensitivity: 0.96
+  depth_range: [0, 400]
+  lims: [-78, -68, 36, 42]
+  plttype: ['bottom', 'surface']
+lobster:
+  long_name: American Lobster
+  omega_sensitivity: 1.09
+  depth_range: [10, 700]
+  lims: [-72, -65, 40.5, 45]
+  plttype: ['bottom']
+Cod:
+  long_name: Atlantic Cod
+  omega_sensitivity: 1.19
+  depth_range: [10, 200]
+  lims: [-72, -65, 40.5, 45]
+  plttype: ['bottom']

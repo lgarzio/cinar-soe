@@ -60,8 +60,11 @@ def main(species_list, stype, savedir):
 
     # convert to dataframe and get rid of nans
     df = ds.to_dataframe().reset_index()
-    df = df[['time', 'year', 'month', 'season', 'latitude', 'longitude', 'depth', f'temperature_{stype}', f'omega_{stype}']]
-    df = df[~np.isnan(df[f'omega_{stype}'])]
+    depth_col = f'depth_{stype}_sample'
+    temp_col = f'temperature_{stype}'
+    omega_col = f'omega_{stype}'
+    df = df[['time', 'year', 'month', 'season', 'latitude', 'longitude', depth_col, temp_col, omega_col]]
+    df = df[~np.isnan(df[omega_col])]
 
     # get threshold configuration file
     cfile = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'configs', 'species_thresholds.yml')
@@ -92,7 +95,7 @@ def main(species_list, stype, savedir):
                 region = 'mab'
             elif values['lims'][0] == -72:
                 region = 'gom'
-            fig, ax = cplt.create(extent, **kwargs)
+            fig, ax = cplt.create(values['lims'], **kwargs)
             plt.subplots_adjust(top=.91, bottom=0.08, right=.94, left=0.08)
             CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
                              transform=ccrs.PlateCarree())
@@ -111,15 +114,15 @@ def main(species_list, stype, savedir):
             df_season_region = df_season[df_season['in_region'] == 'yes']
 
             # remove points outside of the species depth range
-            df_season_region_depth = df_season_region[(df_season_region['depth'] >= values['depth_range'][0]) & (
-                    df_season_region['depth'] <= values['depth_range'][1])]
+            df_season_region_depth = df_season_region[(df_season_region[depth_col] >= values['depth_range'][0]) & (
+                    df_season_region[depth_col] <= values['depth_range'][1])]
 
             # plot everything within the species depth range as empty circles
             sct = ax.scatter(df_season_region_depth.longitude, df_season_region_depth.latitude, c='None',
                              marker='o', edgecolor='lightgray', s=20, transform=ccrs.PlateCarree(), zorder=10)
 
             # plot the values less than the threshold as filled circles
-            df_season_region_flag = df_season_region_depth[df_season_region_depth[f'omega_{stype}'] < values['omega_sensitivity']]
+            df_season_region_flag = df_season_region_depth[df_season_region_depth[omega_col] < values['omega_sensitivity']]
             # df_season_region_flag = df_season_region_flag[(df_season_region_flag['depth'] >= values['depth_range'][0]) & (
             #         df_season_region_flag['depth'] <= values['depth_range'][1])]
 
@@ -166,11 +169,11 @@ def main(species_list, stype, savedir):
             plt.close()
 
             # export a dataframe of the times the threshold was exceeded
-            summary = pd.DataFrame(df_season_region_flag.index)
-            df_days = summary.groupby(summary['time'].map(lambda x: x.day)).min()
-            df_days.rename(columns={'time': 'date_threshold_reached'}, inplace=True)
+            summary = pd.DataFrame(df_season_region_flag.time)
+            summary['date'] = pd.to_datetime(summary['time']).dt.date
+            df_days = summary.groupby(summary['date']).count()
             df_days.reset_index(inplace=True)
-            df_days['date_threshold_reached'] = df_days['date_threshold_reached'].map(lambda t: t.strftime('%Y-%m-%d'))
+            df_days.rename(columns={'date': 'date_threshold_reached'}, inplace=True)
             df_days.sort_values(by='date_threshold_reached', inplace=True)
             df_days.drop(columns=['time'], inplace=True)
 
@@ -213,9 +216,9 @@ def main(species_list, stype, savedir):
             
                     # plot the values less than the threshold and within the depth range as filled circles
                     df_season_year_flag = df_season_year[
-                        df_season_year[f'omega_{stype}'] < values['omega_sensitivity']]
+                        df_season_year[omega_col] < values['omega_sensitivity']]
                     df_season_year_flag = df_season_year_flag[
-                        (df_season_year_flag['depth'] >= values['depth_range'][0]) & (df_season_year_flag['depth'] <= values['depth_range'][1])]
+                        (df_season_year_flag[depth_col] >= values['depth_range'][0]) & (df_season_year_flag[depth_col] <= values['depth_range'][1])]
             
                     sct = ax.scatter(df_season_year_flag.longitude, df_season_year_flag.latitude, c=c,
                                      marker='o', s=20, transform=ccrs.PlateCarree(), zorder=10)
