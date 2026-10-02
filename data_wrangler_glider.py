@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/23/2024
-Last modified: 8/5/2026
+Last modified: 10/2/2026
 Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
@@ -223,8 +223,6 @@ def main(filedir, savedir):
 
                 data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], deployment)
                 
-                data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], depth_surface)
-                data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], depth_bottom)
                 data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'], station_water_depth)
                 data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], gl_lat)
                 data['data_vars']['lon']['data'] = np.append(data['data_vars']['lon']['data'], gl_lon)

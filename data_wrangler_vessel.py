@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 8/5/2026
+Last modified: 10/2/2026
 Grab vessel-based surface- and bottom-water pH and omega data from CODAP-NA and additional ECOMON 
 and ECOA datasets. Export as NetCDF.
 CODAP-NA v2021 dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
@@ -109,8 +109,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'],
                                                                 int(dfc_profile.Accession.values[0]))
             
-            data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], mindepth)
-            data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], maxdepth)
+            data['data_vars']['depth_surface_sample']['data'] = np.append(data['data_vars']['depth_surface_sample']['data'], mindepth)
+            data['data_vars']['depth_bottom_sample']['data'] = np.append(data['data_vars']['depth_bottom_sample']['data'], maxdepth)
             data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'],
                                                                           station_water_depth)
             data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], profile_coords[1])
@@ -324,8 +324,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                                 df_profile.Observation_Type.values[0])
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'], cruise_accession)
 
-            data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], mindepth)
-            data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], maxdepth)
+            data['data_vars']['depth_surface_sample']['data'] = np.append(data['data_vars']['depth_surface_sample']['data'], mindepth)
+            data['data_vars']['depth_bottom_sample']['data'] = np.append(data['data_vars']['depth_bottom_sample']['data'], maxdepth)
             data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'],
                                                                           station_water_depth)
             data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], profile_coords[1])
@@ -355,8 +355,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'], 
                                                             np.repeat(cruise_accession, len(tm)))
 
-            data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], df_ft[depthvar].values)
-            data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], np.repeat(np.nan, len(tm)))
+            data['data_vars']['depth_surface_sample']['data'] = np.append(data['data_vars']['depth_surface_sample']['data'], df_ft[depthvar].values)
+            data['data_vars']['depth_bottom_sample']['data'] = np.append(data['data_vars']['depth_bottom_sample']['data'], np.repeat(np.nan, len(tm)))
             data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'],
                                                                             np.repeat(np.nan, len(tm)))
             data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], df_ft[coord_vars[1]].values)
@@ -482,8 +482,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'],
                                                            np.repeat(cruise_accession, len(df.time)))
 
-        data['data_vars']['depth_surface']['data'] = np.append(data['data_vars']['depth_surface']['data'], press)
-        data['data_vars']['depth_bottom']['data'] = np.append(data['data_vars']['depth_bottom']['data'], 
+        data['data_vars']['depth_surface_sample']['data'] = np.append(data['data_vars']['depth_surface_sample']['data'], press)
+        data['data_vars']['depth_bottom_sample']['data'] = np.append(data['data_vars']['depth_bottom_sample']['data'], 
                                                               np.repeat(np.nan, len(df.time)))
         data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'],
                                                                         np.repeat(np.nan, len(df.time)))

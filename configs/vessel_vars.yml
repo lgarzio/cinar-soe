@@ -43,14 +43,14 @@ lon:
     units: degrees_east
     long_name: Longitude
     standard_name: longitude
-depth_surface:
+depth_surface_sample:
   dtype: float32
   dims: time
   attrs:
     units: m
     long_name: Depth
     description: Depth at which the surface sample was collected
-depth_bottom:
+depth_bottom_sample:
   dtype: float32
   dims: time
   attrs:
