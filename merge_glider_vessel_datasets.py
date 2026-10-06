@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 8/5/2026
-Last modified: 10/1/2026
+Last modified: 10/6/2026
 Combine the glider- and vessel-based datasets together to create a single dataset per year
 of surface and bottom pH and aragonite saturation state data for the U.S. Northeast Shelf.
 """
@@ -26,6 +26,14 @@ def main(glider_dir, vessel_file, savedir):
     savedir = os.path.join(home_dir, savedir)
     os.makedirs(savedir, exist_ok=True)
 
+    # attributes config file
+    attrsfile = os.path.join(os.path.dirname(__file__), 'configs', 'merged_attrs.yml')
+    with open(attrsfile, "r") as file:
+        attributes_config = yaml.safe_load(file)
+    created = dt.datetime.now(dt.UTC).strftime('%Y-%m-%dT%H:%M')
+    attributes_config['global_attrs']['date_created'] = created
+    attributes_config['global_attrs']['date_modified'] = created
+    
     # get glider data
     glider_files = sorted(glob.glob(os.path.join(home_dir, glider_dir, '*.nc')))
 
@@ -35,12 +43,10 @@ def main(glider_dir, vessel_file, savedir):
                           compat="override", join="outer", combine_attrs="override")
     gcombined = gcombined.sortby("time")
     
-    attrs = dict(units='1', long_name='Collection method', comment='Glider or vessel-based data')
     gcombined["collection_method"] = (
         "time",
         np.full(gcombined.sizes["time"], "glider", dtype="<U6"),
     )
-    gcombined["collection_method"].attrs = attrs
 
     vessel_ds = xr.open_dataset(os.path.join(home_dir, vessel_file))
     vessel_ds = vessel_ds.drop_vars(['data_source', 'obs_type', 'accession'], errors='ignore')
@@ -49,7 +55,6 @@ def main(glider_dir, vessel_file, savedir):
             "time",
             np.full(vessel_ds.sizes["time"], "vessel", dtype="<U6"),
         )
-    vessel_ds["collection_method"].attrs = attrs
 
     # combine the glider and vessel datasets
     ds = xr.concat(
@@ -62,17 +67,10 @@ def main(glider_dir, vessel_file, savedir):
         combine_attrs='override',
     ).sortby('time')
 
-    #ds['obs'] = ('time', np.arange(ds.sizes['time']))
-    #ds['obs'].attrs['long_name'] = 'Observation number'
-
-    # global attributes
-    gafile = os.path.join(os.path.dirname(__file__), 'configs', 'global_attrs.yml')
-    with open(gafile, "r") as file:
-        global_attributes = yaml.safe_load(file)
-    created = dt.datetime.now(dt.UTC).strftime('%Y-%m-%dT%H:%M')
-
-    global_attributes['date_created'] = created
-    global_attributes['date_modified'] = created
+    # add variable attributes from the config file
+    for var in ds.data_vars:
+        if var in attributes_config['variable_attrs']:
+            ds[var] = ds[var].assign_attrs(attributes_config['variable_attrs'][var])
 
     # encoding for variables
     encoding = {}
@@ -89,10 +87,10 @@ def main(glider_dir, vessel_file, savedir):
         # add time coverage start and end to global attributes
         time_start = pd.to_datetime(ds_year.time.values.min()).strftime('%Y-%m-%d')
         time_end = pd.to_datetime(ds_year.time.values.max()).strftime('%Y-%m-%d')
-        global_attributes['time_coverage_start'] = time_start
-        global_attributes['time_coverage_end'] = time_end
+        attributes_config['global_attrs']['time_coverage_start'] = time_start
+        attributes_config['global_attrs']['time_coverage_end'] = time_end
 
-        ds_year = ds_year.assign_attrs(global_attributes)
+        ds_year = ds_year.assign_attrs(attributes_config['global_attrs'])
         ds_year = ds_year.sortby(ds_year.time)
 
         ds_year['time'] = xr.DataArray(
