@@ -1,0 +1,25 @@
+# variable names to keep for the CODAP v2026 dataset
+Day_UTC
+Month_UTC
+Year_UTC
+Cruise_key
+Accession
+Observation_type
+Profile_number
+Latitude
+Longitude
+CTDPRES_dbar
+Depth_meter
+Depth_bottom_meter
+CTDTEMP_ITS90_deg_C
+CTDTEMP_flag
+recommended_Salinity_PSS78
+recommended_Salinity_flag
+pH_TS_insitu_calculated
+pH_TS_insitu_measured
+pH_flag
+pH_TS_insitu_combined
+pH_TS_insitu_combined_flag 
+TALK_umol_kg
+TALK_flag
+Aragonite
