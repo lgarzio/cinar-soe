@@ -77,6 +77,11 @@ def main(lon_bounds, lat_bounds, codap_file):
     # remove questionable (6) TA data
     df.loc[df.TALK_flag == 6, 'TALK_umol_kg'] = np.nan
 
+    # convert the observation type to a string
+    df["Observation_type"] = df["Observation_type"].replace({
+        1: "Niskin",
+        2: "Flow-through"})
+
     # If aragonite saturation state isn't available, calculate it
     for idx, row in df.iterrows():
         if pd.isna(row.Aragonite):
