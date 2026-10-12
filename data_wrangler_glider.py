@@ -223,6 +223,8 @@ def main(filedir, savedir):
 
                 data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], deployment)
                 
+                data['data_vars']['depth_surface_sample']['data'] = np.append(data['data_vars']['depth_surface_sample']['data'], depth_surface)
+                data['data_vars']['depth_bottom_sample']['data'] = np.append(data['data_vars']['depth_bottom_sample']['data'], depth_bottom)
                 data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'], station_water_depth)
                 data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], gl_lat)
                 data['data_vars']['lon']['data'] = np.append(data['data_vars']['lon']['data'], gl_lon)
@@ -277,6 +279,6 @@ def main(filedir, savedir):
 
 if __name__ == '__main__':
     # 'rucool/Saba/gliderdata/ru_ph_ncei_datasets' 'rucool/Saba/gliderdata/sbu/from_DAC' 'rucool/Saba/gliderdata/umaine/from_DAC'
-    files = 'rucool/Saba/gliderdata/ru_ph_ncei_datasets/2022'
+    files = 'rucool/Saba/gliderdata/ru_ph_ncei_datasets/2026'
     save_directory = 'rucool/Saba/NOAA_SOE/data/output_nc/gliders'
     main(files, save_directory)
