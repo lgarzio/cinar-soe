@@ -30,8 +30,7 @@ variable_attrs:
   pH_surface:
     units: '1'
     long_name: Surface pH
-    comment: For the CODAP-NA v2021 dataset (vessel-based), pH_TS_insitu_measured was used when
-      available. Otherwise, pH_TS_insitu_calculated was used. For the additional vessel-based datasets downloaded
+    comment: For the CODAP-NA v2026 dataset (vessel-based), pH_TS_insitu_combined was used. For the additional vessel-based datasets downloaded
       from NCEI, pH at in situ temperature, pressure, and salinity were calculated
       from pH_TS_20C using PyCO2SYS. For glider datasets, the pH provided in each dataset was used.
     description: For vessel datasets, surface pH is the shallowest measurement of a vertical CTD/Rosette
@@ -42,8 +41,7 @@ variable_attrs:
   pH_bottom:
     units: '1'
     long_name: Bottom pH
-    comment: For the CODAP-NA v2021 dataset (vessel-based), pH_TS_insitu_measured was used when
-      available. Otherwise, pH_TS_insitu_calculated was used. For the additional vessel-based datasets downloaded
+    comment: For the CODAP-NA v2026 dataset (vessel-based), pH_TS_insitu_combined was used. For the additional vessel-based datasets downloaded
       from NCEI, pH at in situ temperature, pressure, and salinity were calculated
       from pH_TS_20C using PyCO2SYS. For glider datasets, the pH provided in each dataset was used.
     description: For vessel datasets, bottom pH is the deepest measurement of a vertical CTD/Rosette

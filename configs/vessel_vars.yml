@@ -73,8 +73,7 @@ pH_surface:
   attrs:
     units: '1'
     long_name: Surface pH
-    comment: For the CODAP-NA v2021 dataset, pH_TS_insitu_measured was used when
-      available. Otherwise, pH_TS_insitu_calculated was used. For the datasets downloaded
+    comment: For the CODAP-NA v2026 dataset, pH_TS_insitu_combined was used. For the datasets downloaded
       from NCEI, pH at in situ temperature, pressure, and salinity were calculated
       from pH_TS_20C using PyCO2SYS.
     description: Surface pH is the shallowest measurement of a vertical CTD/Rosette
@@ -86,8 +85,7 @@ pH_bottom:
   attrs:
     units: '1'
     long_name: Bottom pH
-    comment: For the CODAP-NA v2021 dataset, pH_TS_insitu_measured was used when
-      available. Otherwise, pH_TS_insitu_calculated was used. For the datasets downloaded
+    comment: For the CODAP-NA v2026 dataset, pH_TS_insitu_combined was used. For the datasets downloaded
       from NCEI, pH at in situ temperature, pressure, and salinity were calculated
       from pH_TS_20C using PyCO2SYS.
     description: Bottom pH is the deepest measurement of a vertical CTD/Rosette

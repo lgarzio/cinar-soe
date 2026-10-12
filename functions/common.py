@@ -189,11 +189,13 @@ def return_bottom_data(df,
                 temp_bottom = np.nan
 
         else:
+            max_depth = np.nan
             pH_bottom = np.nan
             omega_bottom = np.nan
             temp_bottom = np.nan
 
     else:
+        max_depth = np.nan
         station_water_depth = np.nan
         pH_bottom = np.nan
         omega_bottom = np.nan
@@ -217,7 +219,7 @@ def return_surface_data(df,
     :param omega_est_col: name of the column containing estimated omega data, default='aragonite_estimated'
     """
     min_depth = np.nanmin(df[depth_col])
-    if bool(min_depth < 10):
+    if min_depth < 10:
         dfc = df[df[depth_col]== min_depth]
 
         # drop lines where measured omega isn't available
@@ -240,6 +242,7 @@ def return_surface_data(df,
         if bool(temp_surface < 0):
             temp_surface = np.nan
     else:
+        min_depth = np.nan
         pH_surface = np.nan
         omega_surface = np.nan
         temp_surface = np.nan

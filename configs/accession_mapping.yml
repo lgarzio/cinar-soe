@@ -1,0 +1,17 @@
+# mapping accession numbers to additional datasets not in CODAP dataset
+mapping:
+  HB2302: '0296717'
+  HB2303: '0302973'
+  PC2305: '0303262'
+  HB2401: '0309660'
+  HB2403: '0309662'
+  HB2406: '0309663'
+  PC2406: '0309698'
+  HB2501: '0310546'
+  HB2503: '0317594'
+  PC2503: '0317930'
+underway:
+  ECOA-1: '0157389'
+  ECOA-2: '0215462'
+  ECOA3: '0295751'
+  NPS_NOAA2025: '0313638'

@@ -2,11 +2,12 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 10/2/2026
+Last modified: 10/12/2026
 Grab vessel-based surface- and bottom-water pH and omega data from CODAP-NA and additional ECOMON 
 and ECOA datasets. Export as NetCDF.
-CODAP-NA v2021 dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
-Must run data_wrangler_codap_v2021.py first to create the CODAP-NA v2021 summary csv file.
+CODAP-NA v2026 (NCEI Accession 0315529) dataset downloaded via the NCEI OCADs data portal
+(https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system).
+Must run data_wrangler_codap_v2026.py first to create the CODAP-NA v2026 summary csv file.
 Additional cruise datasets were downloaded from the NCEI OCADs data portal
 (https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system)
 """
@@ -42,7 +43,7 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     with open(cfile, "r") as file:
         config_dict = yaml.safe_load(file)
 
-    # get filepaths for other datasets not included in CODAP-NA v2021
+    # get filepaths for other datasets not included in CODAP-NA v2026
     with open(os.path.join(home_dir, extra_files), "r") as file:
         extra_files_list = yaml.safe_load(file)
     extra_files = extra_files_list.split(' ')
@@ -53,13 +54,13 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     underway_files = underway_files_list.split(' ')
     underway_files = [os.path.join(home_dir, x) for x in underway_files]
 
-    # initialize dictionary to append surface and bottom data from cruises (CODAPv2021, ECOMON and ECOA datasets)
+    # initialize dictionary to append surface and bottom data from cruises (CODAPv2026, ECOMON and ECOA datasets)
     data = {
         "attrs": {
             "comment": "Synthesis of surface and bottom pH and aragonite saturation state data from vessel-based measurements "
                        "that were spatially limited to the U.S. Northeast Shelf.",
-            "data_sources": "CODAP-NA v2021 dataset (https://essd.copernicus.org/articles/13/2777/2021/) and subsequent "
-                            "ECOMON and ECOA cruises not included in the CODAP-NA v2021 dataset. Additional datasets "
+            "data_sources": "CODAP-NA v2026 dataset (NCEI Accession 0315529) and subsequent "
+                            "ECOMON and ECOA cruises not included in the CODAP-NA v2026 dataset. Additional datasets "
                             "were downloaded from NCEI's Ocean Carbon and Acidification Data Portal "
                             "(https://www.ncei.noaa.gov/access/ocean-carbon-acidification-data-system-portal/)"
         },
@@ -81,10 +82,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
     # get CODAP data
     df = pd.read_csv(os.path.join(home_dir, codap_file))
 
-    # for each profile on each cruise, find the shallowest and deepest samples
-    cruises = np.unique(df.Cruise_ID)
+    # for each profile on each expedition, find the shallowest and deepest samples
+    cruises = np.unique(df.EXPOCODE)
     for cruise in cruises:
-        dfc = df[df.Cruise_ID == cruise]
+        dfc = df[df.EXPOCODE == cruise]
         profile_num = np.unique(dfc.Profile_number)
         for profile in profile_num:
             dfc_profile = dfc[dfc.Profile_number == profile]
@@ -92,18 +93,33 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             tm = pd.to_datetime(dfc_profile.time.values[0]).timestamp()
             
             # find surface sample
-            mindepth, pH_surface, omega_surface, temp_surface = cf.return_surface_data(dfc_profile)
+            mindepth, pH_surface, omega_surface, temp_surface = cf.return_surface_data(dfc_profile,
+                                                                                       depth_col='Depth_meter', 
+                                                                                       pH_col='pH_TS_insitu_combined', 
+                                                                                       omega_col='Aragonite', 
+                                                                                       omega_est_col=None,
+                                                                                       temp_col='CTDTEMP_ITS90_deg_C')
 
             # find deep sample
-            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth = cf.return_bottom_data(dfc_profile, bathy, profile_coords)
+            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth = cf.return_bottom_data(dfc_profile, 
+                                                                                                        bathy, 
+                                                                                                        profile_coords,
+                                                                                                        depth_col='Depth_meter', 
+                                                                                                        pH_col='pH_TS_insitu_combined', 
+                                                                                                        omega_col='Aragonite', 
+                                                                                                        omega_est_col=None,
+                                                                                                        temp_col='CTDTEMP_ITS90_deg_C')
 
-
+            if np.isnan(mindepth) and np.isnan(maxdepth):
+                continue
+            
             # add data to dictionary
             data['coords']['time']['data'] = np.append(data['coords']['time']['data'], tm)
 
             data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'],
-                                                                    'CODAP_NA_v2021')
-            data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'], cruise)
+                                                                    'CODAP_NA_v2026')
+            data['data_vars']['cruise_deployment']['data'] = np.append(data['data_vars']['cruise_deployment']['data'],
+                                                                       dfc_profile.Cruise_ID.values[0])
             data['data_vars']['obs_type']['data'] = np.append(data['data_vars']['obs_type']['data'],
                                                                 dfc_profile.Observation_type.values[0])
             data['data_vars']['accession']['data'] = np.append(data['data_vars']['accession']['data'],
@@ -123,26 +139,21 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['data_vars']['omega_bottom']['data'] = np.append(data['data_vars']['omega_bottom']['data'], omega_bottom)
             data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'], temp_bottom)
 
+    # # export CODAP summary
+    # ds = xr.Dataset.from_dict(data)
+    # df = ds.to_dataframe()
+    # summary_df = df[["cruise_deployment", "accession"]].drop_duplicates().reset_index(drop=True).sort_values(by="accession")
+    # summary_df.to_csv(os.path.join(savedir, 'CODAP-NA_v2026-summary.csv'), index=False)
+
 #######################################################################################################################
     # add extra datasets
-    accession_mapping = {'HB1902': '0209045',
-                         'GU1902': '0209156',
-                         'GU1905': '0210238',
-                         'GU2102': '0248269',
-                         'PC2104': '0249432',
-                         'PC2106': '0249517',
-                         'PC2205': '0283758',
-                         'HB2204': '0276023',
-                         'ECOA3': '0283329',
-                         'HB2302': '0296717',
-                         'HB2303': '0302973',
-                         'PC2305': '0303262',
-                         'HB2401': '0309660',
-                         'HB2403': '0309662',
-                         'HB2406': '0309663',
-                         'PC2406': '0309698'}
+    cfile = os.path.join(os.path.dirname(__file__), 'configs', 'accession_mapping.yml')
+    with open(cfile, "r") as file:
+        accession_mapping = yaml.safe_load(file)
+    accession_underway_mapping = accession_mapping['underway']
+    accession_mapping = accession_mapping['mapping']
 
-    # additional datasets that aren't included in CODAP v2021
+    # additional datasets that aren't included in CODAP v2026
     for ef in extra_files:
         df = pd.read_csv(ef)
         df.replace(-999, np.nan, inplace=True)
@@ -173,16 +184,21 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         # calculate pressure from depth and latitude
         df['press_dbar'] = p_from_z(-df[depthvar], df[coord_vars[1]])
 
+        # find the correct pH varaiable name
         try:
             df.dropna(subset=['pH_TS_20C'], inplace=True)
             phvar = 'pH_TS_20C'
             tavar = 'TA_umol/kg'
             df['report_temp'] = 20
+            phflagvar = 'pH_Flag'
+            taflagvar = 'TA_flag'
         except KeyError:
             try:
                 df.dropna(subset=['pH 20C'], inplace=True)
                 phvar = 'pH 20C'
                 tavar = 'TA (umol/kg)'
+                phflagvar = 'pH_Flag'
+                taflagvar = 'TA_flag'
                 df['report_temp'] = 20
             except KeyError:
                 # ECOA-3 dataset
@@ -194,8 +210,17 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
                 phvar = 'pH_T_measured_25C'
                 tavar = 'TA'
+                phflagvar = 'pH_Flag'
+                taflagvar = 'TA_flag'
                 df['report_temp'] = 25
 
+        # apply pH and TA flags to remove questionable (3) and bad (4) data
+        df.loc[df['pH_Flag'].isin([3, 4]), phvar] = np.nan
+        df.loc[df['TA_Flag'].isin([3, 4]), tavar] = np.nan
+
+        # drop nans
+        df.dropna(subset=[phvar], inplace=True)
+        
         # format date
         try:
             df['year'] = df['Year_UTC'].apply(int)
@@ -208,12 +233,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         # make sure the data are within the defined extent
         df['in_region'] = ''
         for i, row in df.iterrows():
-            try:
-                lon = row.Longitude_Dec_Deg
-                lat = row.Latitude_Dec_Deg
-            except AttributeError:
-                lon = row.Longitude
-                lat = row.Latitude
+            lon = row[coord_vars[0]]
+            lat = row[coord_vars[1]]
             if Polygon(list(zip(lon_bounds, lat_bounds))).contains(Point(lon, lat)):
                 df.loc[i, 'in_region'] = 'yes'
             else:
@@ -233,8 +254,12 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             df['TEMP'] = df['CTDTEMP_ITS90'].combine_first(df['TSGTEMP_deg_C'])
             df['SAL'] = df['CTDSAL_PSS78'].combine_first(df['TSGSAL_PSS78'])
         except KeyError:
-            df['TEMP'] = df['CTDTEMP_ITS90']
-            df['SAL'] = df['CTDSAL_PSS78']
+            try:
+                df['TEMP'] = df['CTDTEMP_ITS90'].combine_first(df['TSG_TEMP_DEG C'])
+                df['SAL'] = df['CTDSAL_PSS78'].combine_first(df['TSG_SAL'])
+            except KeyError:
+                df['TEMP'] = df['CTDTEMP_ITS90']
+                df['SAL'] = df['CTDSAL_PSS78']
 
         # calculate pH at in situ temperature, pressure, and salinity using PyCO2SYS
         pH_reported = df[phvar].values
@@ -285,9 +310,15 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
         # save flow-through data for later use
         df_ft = df[df.Observation_Type == 'Flow-through']
+        if len(df_ft) == 0:
+            df_ft = df[df.Observation_Type == 'Flow-Through']
+        if len(df_ft) == 0:
+            df_ft = df[df.Observation_Type == 'FT']
         df_ft = df_ft.dropna(subset=['pH_insitu'])
 
         df = df[df.Observation_Type != 'Flow-through']
+        df = df[df.Observation_Type != 'Flow-Through']
+        df = df[df.Observation_Type != 'FT']
         
         # for each profile, find the shallowest sample
         profile_num = np.unique(df.profile_id)
@@ -316,6 +347,9 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                                                                         omega_est_col=None,
                                                                                                         temp_col='TEMP')
 
+            if np.isnan(mindepth) and np.isnan(maxdepth):
+                continue
+            
             # add data to dictionary
             data['coords']['time']['data'] = np.append(data['coords']['time']['data'], tm)
             data['data_vars']['data_source']['data'] = np.append(data['data_vars']['data_source']['data'], 'NCEI-OCADS')
@@ -374,14 +408,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                                         np.repeat(np.nan, len(tm)))
 
 ########################################################################################################################
-    # additional underway datasets
-    accession_underway_mapping = {'ECOA-1': '0157389',
-                                  'ECOA-2': '0215462',
-                                  'ECOA3': '0295751'
-                                  }
-
+    # additional underway/surface datasets
     for uf in underway_files:
-        print(uf)
         df = pd.read_csv(uf)
         df.replace(-999, np.nan, inplace=True)
         try:
@@ -393,14 +421,24 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             salvar = 'TSG_Sal'
             tempvar = 'TSG_SST_C'
         except KeyError:
-            # ECOA-3 dataset
-            df.dropna(subset=['pH_T_measured'], inplace=True)
-            phvar = 'pH_T_measured'
-            phflagvar = 'pH_flag'
-            tavar = 'TA_umol_kg'
-            taflagvar = 'TA_flag'
-            salvar = 'SSS'
-            tempvar = 'TSG_temp_ITS90'
+            try:
+                # ECOA-3 dataset
+                df.dropna(subset=['pH_T_measured'], inplace=True)
+                phvar = 'pH_T_measured'
+                phflagvar = 'pH_flag'
+                tavar = 'TA_umol_kg'
+                taflagvar = 'TA_flag'
+                salvar = 'SSS'
+                tempvar = 'TSG_temp_ITS90'
+            except KeyError:
+                # NPS dataset
+                df.dropna(subset=['pH_TS_20C'], inplace=True)
+                phvar = 'pH_TS_20C'
+                phflagvar = 'pH_Flag'
+                tavar = 'TA_umol.kg'
+                taflagvar = 'TA_Flag'
+                salvar = 'Salinity_PSS78'
+                tempvar = 'YSITemp_Deg_C'
 
         # WOCE quality control flags are used: 2 = good value, 3 = questionable value, 4 = bad value,
         # 5 = value not reported, 6 = mean of replicate measurements, 9 = sample not drawn.
@@ -418,18 +456,34 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         try:
             df['time'] = pd.to_datetime(df[['Year', 'Month', 'Day']])
         except KeyError:
-            df['time'] = df['Date_UTC'].map(lambda t: pd.to_datetime(str(t)))
+            try:
+                df['time'] = df['Date_UTC'].map(lambda t: pd.to_datetime(str(t)))
+            except KeyError:
+                df['year'] = df['Year_UTC'].apply(int)
+                df['month'] = df['Month_UTC'].apply(int)
+                df['day'] = df['Day_UTC'].apply(int)
+                df['time'] = pd.to_datetime(df[['year', 'month', 'day']])
 
+        try:
+            coord_vars = ['Longitude_Dec_Deg', 'Latitude_Dec_Deg']
+            test = df[coord_vars[0]]
+        except KeyError:
+            coord_vars = ['Longitude', 'Latitude']
+        
         # make sure the data are within the defined extent
         df['in_region'] = ''
         for i, row in df.iterrows():
-            if Polygon(list(zip(lon_bounds, lat_bounds))).contains(Point(row.Longitude, row.Latitude)):
+            lon = row[coord_vars[0]]
+            lat = row[coord_vars[1]]
+            if Polygon(list(zip(lon_bounds, lat_bounds))).contains(Point(lon, lat)):
                 df.loc[i, 'in_region'] = 'yes'
             else:
                 df.loc[i, 'in_region'] = 'no'
 
         # drop data if it's not in the region specified
         df = df[df.in_region == 'yes']
+        if len(df) == 0:
+            continue
 
         # calculate pH at in situ temperature, pressure, and salinity using PyCO2SYS
         # assume pH is reported at 20C unless otherwise specified
@@ -439,7 +493,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         par2_type = 1
 
         # ECOA2 and ECOA3 - pH measurements were made at 25C (pers comm Shawn Shellito <Shawn.Shellito@unh.edu>)
-        reported_temp = df.PH_TOT_TEMP_C.values
+        try:
+            reported_temp = df.PH_TOT_TEMP_C.values
+        except AttributeError:
+            reported_temp = np.repeat(20, len(pH_reported))
 
         kwargs = dict(salinity=df[salvar].values,
                       temperature=reported_temp,  # reported measurement temperature
@@ -456,7 +513,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
         pH_insitu = np.round(results['pH_out'], 4)
 
         # calculate aragonite saturation state
-        press = np.repeat(5, len(df.time))
+        try:
+            press = df['Depth_meters'].values
+        except KeyError:
+            press = np.repeat(5, len(df.time))
         omega_surface, pco2, revelle = cf.run_co2sys_ta_ph(ta,
                                                            pH_insitu,
                                                            df[salvar].values,
@@ -487,8 +547,8 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                               np.repeat(np.nan, len(df.time)))
         data['data_vars']['station_water_depth']['data'] = np.append(data['data_vars']['station_water_depth']['data'],
                                                                         np.repeat(np.nan, len(df.time)))
-        data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], np.array(df.Latitude))
-        data['data_vars']['lon']['data'] = np.append(data['data_vars']['lon']['data'], np.array(df.Longitude))
+        data['data_vars']['lat']['data'] = np.append(data['data_vars']['lat']['data'], np.array(df[coord_vars[1]]))
+        data['data_vars']['lon']['data'] = np.append(data['data_vars']['lon']['data'], np.array(df[coord_vars[0]]))
 
         data['data_vars']['pH_surface']['data'] = np.append(data['data_vars']['pH_surface']['data'], pH_insitu)
         data['data_vars']['omega_surface']['data'] = np.append(data['data_vars']['omega_surface']['data'],
@@ -557,8 +617,9 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 if __name__ == '__main__':
     lons = [-78, -65, -65, -78]  # longitude boundaries for grabbing vessel-based data
     lats = [35, 35, 45, 45]  # latitude boundaries for grabbing vessel-based data
-    codap = 'rucool/Saba/OA_cruise_data/CODAPv2021/CODAP-NA_v2021-filtered-for-analysis.csv'
-    other = 'rucool/Saba/OA_cruise_data/soe_other_filepaths.yml'
-    other_underway = 'rucool/Saba/OA_cruise_data/soe_other_underway_filepaths.yml'
+    #codap = 'rucool/Saba/OA_cruise_data/CODAPv2021/CODAP-NA_v2021-filtered-for-analysis.csv'
+    codap = 'rucool/Saba/OA_cruise_data/CODAPv2026/0315529/2.2/data/0-data/SDIS_submission_CODAP_NA_V2026/CODAP-NA_v2026-filtered-for-analysis.csv'
+    other = 'rucool/Saba/OA_cruise_data/soe_other_filepaths_2026.yml'
+    other_underway = 'rucool/Saba/OA_cruise_data/soe_other_underway_filepaths_2025.yml'
     save_directory = 'rucool/Saba/NOAA_SOE/data/output_nc'
     main(lons, lats, codap, other, other_underway, save_directory)
