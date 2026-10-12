@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/16/2022
-Last modified: 11/18/2025
+Last modified: 12/2/2025
 Plot in highlighted circles when summer bottom/surface aragonite saturation state (omega) is <= defined thresholds for
 key Mid-Atlantic species using CODAP-NA, EcoMon, and glider datasets.
 CODAP-NA dataset documented here: https://essd.copernicus.org/articles/13/2777/2021/
@@ -114,24 +114,26 @@ def main(cruise_file, glider_file, ab, stype, savedir, thresh):
 
             df_season_region = df_season[df_season['in_region'] == 'yes']
 
-            # plot everything as empty circles
-            sct = ax.scatter(df_season_region.lon, df_season_region.lat, c='None',
+            # remove points outside of the species depth range
+            df_season_region_depth = df_season_region[(df_season_region['depth'] >= value['depth_range'][0]) & (
+                    df_season_region['depth'] <= value['depth_range'][1])]
+
+            # plot everything within the species depth range as empty circles
+            sct = ax.scatter(df_season_region_depth.lon, df_season_region_depth.lat, c='None',
                              marker='o', edgecolor='lightgray', s=20, transform=ccrs.PlateCarree(), zorder=10)
 
-            # plot the values less than the threshold and within the depth range as filled circles
-            df_season_region_flag = df_season_region[df_season_region[f'omega_{stype}'] < value['omega_sensitivity']]
-            df_season_region_flag = df_season_region_flag[(df_season_region_flag['depth'] >= value['depth_range'][0]) & (
-                    df_season_region_flag['depth'] <= value['depth_range'][1])]
+            # plot the values less than the threshold as filled circles
+            df_season_region_flag = df_season_region_depth[df_season_region_depth[f'omega_{stype}'] < value['omega_sensitivity']]
+            # df_season_region_flag = df_season_region_flag[(df_season_region_flag['depth'] >= value['depth_range'][0]) & (
+            #         df_season_region_flag['depth'] <= value['depth_range'][1])]
 
             sct = ax.scatter(df_season_region_flag.lon, df_season_region_flag.lat, c='darkcyan',
                              marker='o', s=20, transform=ccrs.PlateCarree(), zorder=10, label='<2023')
 
-            # plot 2023 and 2024 in a different color
-            colors = ['magenta', 'cyan', '#89F336']
-            if key in ['atlantic_sea_scallop', 'longfin_squid', 'pteropod']:
-                loopyrs = [2023, 2024, 2025]
-            else:
-                loopyrs = [2023]
+            # plot 2023, 2024, 2025 in a different color
+            colors = ['magenta', 'cyan', '#ff7240']  # lime green #89F336, neon orange #ff7240
+            highlightyrs = [2023, 2024, 2025]
+            loopyrs = np.intersect1d(np.unique(df_season_region_depth.year), highlightyrs)
 
             for i, yy in enumerate(loopyrs):
                 # winter spans two years - grab the December data from the previous year
@@ -161,8 +163,8 @@ def main(cruise_file, glider_file, ab, stype, savedir, thresh):
                 value['depth_range'][0],
                 value['depth_range'][1]))
 
-            min_year1 = np.nanmin(np.unique(df_season_region['year']))
-            max_year1 = np.nanmax(np.unique(df_season_region['year']))
+            min_year1 = np.nanmin(np.unique(df_season_region_depth['year']))
+            max_year1 = np.nanmax(np.unique(df_season_region_depth['year']))
             sfile = os.path.join(savedir, f'{stype}_omega_map-{key}-{min_year1}-{max_year1}-{region}-{season.lower()}.png')
             plt.savefig(sfile, dpi=200)
             plt.close()
@@ -178,65 +180,67 @@ def main(cruise_file, glider_file, ab, stype, savedir, thresh):
 
             df_days.to_csv(os.path.join(savedir, f'{stype}_omega_days_threshold_reached-{key}-{region}-{season.lower()}.csv'), index=False)
 
-            # # make a plot for each year
-            # region_years = np.unique(df_season_region.year)
-            # for yy in region_years:
-            #     fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-            #     plt.subplots_adjust(top=.9, bottom=0.08, right=.94, left=0.08)
-            #     CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
-            #                      transform=ccrs.PlateCarree())
-            #     ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
-            #
-            #     #cplt.add_bathymetry(ax, bath_lon, bath_lat, bath_elev, method='topo_log', zorder=1)
-            #
-            #     cf.add_map_features(ax, value['lims'], oceancolor=cfeature.COLORS['water'])
-            #
-            #     # grab data for the year
-            #     # winter spans two years - grab the December data from the previous year
-            #     if season_code == 'DJF':
-            #         # Dec from previous year
-            #         df_season_year1 = df_season_region[(df_season_region['year'] == (yy - 1)) & (df_season_region['month'] == 12)]
-            #         # Jan and Feb for the current year
-            #         df_season_year2 = df_season_region[
-            #             (df_season_region['year'] == yy) & np.logical_or(df_season_region['month'] == 1, df_season_region['month'] == 2)]
-            #         df_season_year = pd.concat([df_season_year1, df_season_year2])
-            #     else:
-            #         df_season_year = df_season_region[
-            #             (df_season_region['year'] == yy) & (df_season_region['season'] == season_code)]
-            #
-            #     # plot everything as empty circles
-            #     if len(df_season_year) > 0:
-            #         sct = ax.scatter(df_season_year.lon, df_season_year.lat,
-            #                          marker='o', c='lightgray', s=20, transform=ccrs.PlateCarree(), zorder=10)
-            #
-            #         c = 'darkcyan'
-            #         if yy == 2023:
-            #             c = 'magenta'
-            #         if yy == 2024:
-            #             c = 'cyan'
-            #
-            #         # plot the values less than the threshold and within the depth range as filled circles
-            #         df_season_year_flag = df_season_year[
-            #             df_season_year[f'omega_{stype}'] < value['omega_sensitivity']]
-            #         df_season_year_flag = df_season_year_flag[
-            #             (df_season_year_flag['depth'] >= value['depth_range'][0]) & (df_season_year_flag['depth'] <= value['depth_range'][1])]
-            #
-            #         sct = ax.scatter(df_season_year_flag.lon, df_season_year_flag.lat, c=c,
-            #                          marker='o', s=20, transform=ccrs.PlateCarree(), zorder=10)
-            #
-            #         plt.title('{} {}: Omega below calcification sensitivity of {}:\n{} (depth range: {}-{}m)'.format(
-            #             season,
-            #             yy,
-            #             value['omega_sensitivity'],
-            #             value['long_name'],
-            #             value['depth_range'][0],
-            #             value['depth_range'][1]))
-            #
-            #         sdir = os.path.join(savedir, 'years', key)
-            #         os.makedirs(sdir, exist_ok=True)
-            #         sfile = os.path.join(sdir, f'{stype}_omega_map-{key}-{season.lower()}{yy}.png')
-            #         plt.savefig(sfile, dpi=200)
-            #         plt.close()
+            # make a plot for each year
+            region_years = np.unique(df_season_region_depth.year)
+            for yy in region_years:
+                fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
+                plt.subplots_adjust(top=.9, bottom=0.08, right=.94, left=0.08)
+                CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
+                                 transform=ccrs.PlateCarree())
+                ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
+            
+                #cplt.add_bathymetry(ax, bath_lon, bath_lat, bath_elev, method='topo_log', zorder=1)
+            
+                cf.add_map_features(ax, value['lims'], oceancolor=cfeature.COLORS['water'])
+            
+                # grab data for the year
+                # winter spans two years - grab the December data from the previous year
+                if season_code == 'DJF':
+                    # Dec from previous year
+                    df_season_year1 = df_season_region_depth[(df_season_region_depth['year'] == (yy - 1)) & (df_season_region_depth['month'] == 12)]
+                    # Jan and Feb for the current year
+                    df_season_year2 = df_season_region_depth[
+                        (df_season_region_depth['year'] == yy) & np.logical_or(df_season_region_depth['month'] == 1, df_season_region_depth['month'] == 2)]
+                    df_season_year = pd.concat([df_season_year1, df_season_year2])
+                else:
+                    df_season_year = df_season_region_depth[
+                        (df_season_region_depth['year'] == yy) & (df_season_region_depth['season'] == season_code)]
+            
+                # plot everything as empty circles
+                if len(df_season_year) > 0:
+                    sct = ax.scatter(df_season_year.lon, df_season_year.lat,
+                                     marker='o', c='lightgray', s=20, transform=ccrs.PlateCarree(), zorder=10)
+            
+                    c = 'darkcyan'
+                    if yy == 2023:
+                        c = 'magenta'
+                    if yy == 2024:
+                        c = 'cyan'
+                    if yy == 2025:
+                        c = '#ff7240'
+            
+                    # plot the values less than the threshold and within the depth range as filled circles
+                    df_season_year_flag = df_season_year[
+                        df_season_year[f'omega_{stype}'] < value['omega_sensitivity']]
+                    df_season_year_flag = df_season_year_flag[
+                        (df_season_year_flag['depth'] >= value['depth_range'][0]) & (df_season_year_flag['depth'] <= value['depth_range'][1])]
+            
+                    sct = ax.scatter(df_season_year_flag.lon, df_season_year_flag.lat, c=c,
+                                     marker='o', s=20, transform=ccrs.PlateCarree(), zorder=10)
+            
+                    plt.title('{} {}: Omega below calcification sensitivity of {}:\n{} (depth range: {}-{}m)'.format(
+                        season,
+                        yy,
+                        value['omega_sensitivity'],
+                        value['long_name'],
+                        value['depth_range'][0],
+                        value['depth_range'][1]))
+            
+                    sdir = os.path.join(savedir, 'years', key)
+                    os.makedirs(sdir, exist_ok=True)
+                    sfile = os.path.join(sdir, f'{stype}_omega_map-{key}-{season.lower()}{yy}.png')
+                    plt.savefig(sfile, dpi=200)
+                    plt.close()
 
 
 if __name__ == '__main__':
@@ -247,41 +251,50 @@ if __name__ == '__main__':
     add_boxes = False
     stype = 'surface'  # bottom surface
     save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/plots2026/species_omega_sensitivity'
+    # thresholds = dict(
+    #     atlantic_sea_scallop=dict(
+    #         long_name='Atlantic Sea Scallop',
+    #         omega_sensitivity=1.1,
+    #         depth_range=[25, 200],
+    #         lims=[-78, -68, 36, 42],
+    #         plttype=['bottom']
+    #     ),
+    #     longfin_squid=dict(
+    #         long_name='Longfin Squid',
+    #         omega_sensitivity=0.96,
+    #         depth_range=[0, 400],
+    #         lims=[-78, -68, 36, 42],
+    #         plttype=['bottom', 'surface']
+    #     ),
+    #     lobster=dict(
+    #         long_name='American Lobster',
+    #         omega_sensitivity=1.09,
+    #         depth_range=[10, 700],
+    #         lims=[-72, -65, 40.5, 45],
+    #         plttype=['bottom']
+    #     ),
+    #     cod=dict(
+    #         long_name='Atlantic Cod',
+    #         omega_sensitivity=1.19,
+    #         depth_range=[10, 200],
+    #         lims=[-72, -65, 40.5, 45],
+    #         plttype=['bottom']
+    #     )
+    #     ,
+    #     pteropod=dict(
+    #         long_name='Pteropods',
+    #         omega_sensitivity=1.5,
+    #         depth_range=[0, 50],
+    #         lims=[-78, -68, 36, 42],  #[-78, -68, 36, 42] [-72, -65, 40.5, 45]
+    #         plttype=['surface']
+    #     )
+    # )
     thresholds = dict(
-        atlantic_sea_scallop=dict(
-            long_name='Atlantic Sea Scallop',
-            omega_sensitivity=1.1,
-            depth_range=[25, 200],
-            lims=[-78, -68, 36, 42],
-            plttype=['bottom']
-        ),
-        longfin_squid=dict(
-            long_name='Longfin Squid',
-            omega_sensitivity=0.96,
-            depth_range=[0, 400],
-            lims=[-78, -68, 36, 42],
-            plttype=['bottom', 'surface']
-        ),
-        lobster=dict(
-            long_name='American Lobster',
-            omega_sensitivity=1.09,
-            depth_range=[10, 700],
-            lims=[-72, -65, 40.5, 45],
-            plttype=['bottom']
-        ),
-        cod=dict(
-            long_name='Atlantic Cod',
-            omega_sensitivity=1.19,
-            depth_range=[10, 200],
-            lims=[-72, -65, 40.5, 45],
-            plttype=['bottom']
-        )
-        ,
         pteropod=dict(
             long_name='Pteropods',
             omega_sensitivity=1.5,
             depth_range=[0, 50],
-            lims=[-78, -68, 36, 42],  #[-78, -68, 36, 42] [-72, -65, 40.5, 45]
+            lims=[-72, -65, 40.5, 45],  #[-78, -68, 36, 42] [-72, -65, 40.5, 45]
             plttype=['surface']
         )
     )
