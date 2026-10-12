@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 8/5/2026
-Last modified: 10/6/2026
+Last modified: 10/12/2026
 Combine the glider- and vessel-based datasets together to create a single dataset per year
 of surface and bottom pH and aragonite saturation state data for the U.S. Northeast Shelf.
 """
@@ -14,8 +14,6 @@ import datetime as dt
 import numpy as np
 import pandas as pd
 import xarray as xr
-from collections import OrderedDict
-import functions.common as cf
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
 np.set_printoptions(suppress=True)
 
@@ -107,6 +105,6 @@ def main(glider_dir, vessel_file, savedir):
 
 if __name__ == '__main__':
     glider_files = 'rucool/Saba/NOAA_SOE/data/output_nc/gliders'
-    vessel_file = 'rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_OA_data_2004_2024.nc'
+    vessel_file = 'rucool/Saba/NOAA_SOE/data/output_nc/vessel_based_OA_data_2004_2025.nc'
     save_directory = 'rucool/Saba/NOAA_SOE/data/output_nc/merged'
     main(glider_files, vessel_file, save_directory)
