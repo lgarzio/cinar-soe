@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/15/2024
-Last modified: 11/7/2025
+Last modified: 10/14/2026
 Download NASA 4km resolution SST data from opendap: monthly and daily files.
 https://oceandata.sci.gsfc.nasa.gov/l3/ data viewer and the backend opendap server for the SNPP VIIRS L3 dataset:
 is https://oceandata.sci.gsfc.nasa.gov/opendap/hyrax/VIIRS/L3SMI/contents.html 
@@ -25,7 +25,8 @@ import datetime as dt
 
 
 def main(extent, frequency, start, end, v, savedir):
-    savedir = os.path.join(savedir, v.split('.')[-1])
+    home_dir = os.getenv('HOME')
+    savedir = os.path.join(home_dir, savedir, v.split('.')[-1])
     os.makedirs(savedir, exist_ok=True)
     if frequency == 'monthly':
         savedirmonthly = os.path.join(savedir, 'opendap_monthly')
@@ -52,8 +53,19 @@ def main(extent, frequency, start, end, v, savedir):
 
                 ds.to_netcdf(os.path.join(savedirmonthly, fname))
             except OSError:
-                print(f'file not found {os.path.join(dirname, fname)}')
-                continue
+                try:
+                    # try to download the NRT file
+                    fname = f'SNPP_VIIRS.{start_ymd}_{end_ymd}.L3m.MO.{v}.4km.NRT.nc'
+                    ds = xr.open_dataset(os.path.join(dirname, fname))
+                    lati = np.where(np.logical_and(ds.lat.values > extent[2], ds.lat.values < extent[3]))[0]
+                    loni = np.where(np.logical_and(ds.lon.values > extent[0], ds.lon.values < extent[1]))[0]
+                    ds = ds.isel(lat=lati, lon=loni)
+    
+                    ds.to_netcdf(os.path.join(savedirmonthly, fname))
+
+                except OSError:
+                    print(f'file not found {os.path.join(dirname, fname)}')
+                    continue
 
     elif frequency == 'daily':
         # download daily files
@@ -115,9 +127,8 @@ def main(extent, frequency, start, end, v, savedir):
 if __name__ == '__main__':
     extent = [-79, -64, 34, 46]
     frequency = 'monthly'  # 'monthly' or 'daily' - download daily files then calculate monthly averages
-    startdate = '20120201'
-    enddate = '20251031'
+    startdate = '20260801' # '20120201'
+    enddate = '20260831'  #'20251031'
     variable = 'CHL.chlor_a'  # 'SST3.sst_triple' or 'CHL.chlor_a'
-    # save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/nasa_data'
-    save_directory = '/Users/garzio/Documents/rucool/Saba/NOAA_SOE/data/nasa_data'
+    save_directory = 'rucool/Saba/NOAA_SOE/data/nasa_data'
     main(extent, frequency, startdate, enddate, variable, save_directory)
