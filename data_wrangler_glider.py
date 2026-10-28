@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/23/2024
-Last modified: 10/2/2026
+Last modified: 10/27/2026
 Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
@@ -168,6 +168,9 @@ def main(filedir, savedir):
             interpolate_var(ds, 'depth')
 
         df_vars = ['time','depth_interpolated', phvar, 'aragonite_saturation_state', 'temperature_interpolated', latvar, lonvar]
+        if deployment.startswith('SBU'):
+            df_vars.append('precise_lat')
+            df_vars.append('precise_lon')
 
         # for each glider, grab the data in the bottom 1m of each profile when the glider is within +/- 20% of the water
         # column depth (determined by comparison to global bathymetry data)
@@ -186,6 +189,11 @@ def main(filedir, savedir):
                 tm = pd.to_datetime(df_sel.index).mean().timestamp()
                 gl_lat = np.nanmedian(df_sel[latvar].values)
                 gl_lon = np.nanmedian(df_sel[lonvar].values)
+                if np.isnan(gl_lat):  # some SBU profiles have missing lat/lon values
+                    gl_lat = np.nanmedian(df_sel['precise_lat'].values)
+                    gl_lon = np.nanmedian(df_sel['precise_lon'].values)
+                    if np.isnan(gl_lat):
+                        continue
 
                 # grab suface data (2-4m depth)
                 df_sel_surface = df_sel[df_sel['depth_interpolated'].between(2, 4, inclusive='both')]
