@@ -9,25 +9,22 @@ data_source:
   dtype: object
   dims: time
   attrs:
-    units: '1'
     comment: Source of data
 cruise_deployment:
   dtype: object
   dims: time
   attrs:
-    units: '1'
     comment: Cruise/Deployment ID (either cruise ID or glider deployment ID)
+    long_name: Cruise/Deployment ID
 obs_type:
   dtype: object
   dims: time
   attrs:
-    units: '1'
     comment: Observation type
 accession:
   dtype: int32
   dims: time
   attrs:
-    units: '1'
     comment: NCEI Accession number
 lat:
   dtype: float32
@@ -90,7 +87,7 @@ pH_bottom:
       from pH_TS_20C using PyCO2SYS.
     description: Bottom pH is the deepest measurement of a vertical CTD/Rosette
       cast where water samples were collected for profiles deeper than 10m, provided
-      the sampling depth was no shallower than the bottom 20% of total water column
+      the sampling depth was within +/- 20% of total water column
       depth. For stations with multiple samples at the deepest measurement, the
       median value was calculated.
 omega_surface:
@@ -113,8 +110,8 @@ omega_bottom:
     long_name: Bottom Aragonite Saturation State
     description: Bottom aragonite saturation state is the deepest measurement of
       a vertical CTD/Rosette cast where water samples were collected for profiles
-      deeper than 10m, provided the sampling depth was no shallower than the bottom
-      20% of total water column depth. For stations with multiple samples at the
+      deeper than 10m, provided the sampling depth was within
+      +/- 20% of total water column depth. For stations with multiple samples at the
       deepest measurement, the median value was calculated.
     comment: Bottom aragonite saturation state from the original data source, when
       available. When not available, calculated using PyCO2SYS (Humphreys et al.
@@ -137,6 +134,6 @@ temperature_bottom:
     long_name: Bottom Temperature
     description: Bottom seawater temperature is the deepest measurement of a vertical
       CTD/Rosette cast where water samples were collected for profiles deeper than
-      10m, provided the sampling depth was no shallower than the bottom 20% of total
+      10m, provided the sampling depth was within +/- 20% of total
       water column depth. For stations with multiple samples at the deepest measurement,
       the median value was calculated.

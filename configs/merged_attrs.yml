@@ -16,7 +16,6 @@ global_attrs:
   infoUrl: https://rucool.marine.rutgers.edu/
 variable_attrs:
   collection_method:
-    units: '1'
     long_name: Collection method
     comment: Glider or vessel-based data
   station_water_depth:
@@ -46,10 +45,10 @@ variable_attrs:
       from pH_TS_20C using PyCO2SYS. For glider datasets, the pH provided in each dataset was used.
     description: For vessel datasets, bottom pH is the deepest measurement of a vertical CTD/Rosette
       cast where water samples were collected for profiles deeper than 10m, provided
-      the sampling depth was no shallower than the bottom 20% of total water column
+      the sampling depth was within +/- 20% of total water column
       depth. For stations with multiple samples at the deepest measurement, the
       median value was calculated. For glider datasets, bottom pH is the the median of the values within the 
-      deepest 1m of a glider profile, provided the sampling depth was no shallower than the bottom 20% of total 
+      deepest 1m of a glider profile, provided the sampling depth was within +/- 20% of total 
       water column depth.
   omega_surface:
     units: '1'
@@ -72,12 +71,11 @@ variable_attrs:
       pH.
     description: For vessel datasets, bottom aragonite saturation state is the deepest measurement of
       a vertical CTD/Rosette cast where water samples were collected for profiles
-      deeper than 10m, provided the sampling depth was no shallower than the bottom
-      20% of total water column depth. For stations with multiple samples at the
+      deeper than 10m, provided the sampling depth was within 
+      +/- 20% of total water column depth. For stations with multiple samples at the
       deepest measurement, the median value was calculated. For glider datasets, bottom aragonite saturation 
       state is the the median of the values within the deepest 
-      1m of a glider profile, provided the sampling depth was no shallower than the bottom 
-      20% of total water column depth.
+      1m of a glider profile, provided the sampling depth was within +/- 20% of total water column depth.
   temperature_surface:
     units: C
     long_name: Surface Temperature
@@ -91,8 +89,8 @@ variable_attrs:
     long_name: Bottom Temperature
     description: For vessel datasets, bottom seawater temperature is the deepest measurement of a vertical
       CTD/Rosette cast where water samples were collected for profiles deeper than
-      10m, provided the sampling depth was no shallower than the bottom 20% of total
+      10m, provided the sampling depth was within +/- 20% of total
       water column depth. For stations with multiple samples at the deepest measurement,
       the median value was calculated. For glider datasets, Bottom temperature is the the median 
-      of the values within the deepest 1m of a glider profile, provided the sampling depth was no 
-      shallower than the bottom 20% of total water column depth.
+      of the values within the deepest 1m of a glider profile, provided the sampling depth was 
+      within +/- 20% of total water column depth.
