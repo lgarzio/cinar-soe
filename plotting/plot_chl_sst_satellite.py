@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 11/6/2024
-Last modified: 10/14/2026
+Last modified: 10/26/2026
 Plot chl/sst from monthly SNPP-VIIRS satellite data downloaded from https://oceancolor.gsfc.nasa.gov/l3/
 Calculate seasonal averages from monthly files and plot surface maps.
 Also calculate seasonal climatologies and plot seasonal-yearly anomalies
@@ -22,6 +22,7 @@ import cartopy.feature as cfeature
 import cartopy.crs as ccrs
 import cmocean as cmo
 import functions.common as cf
+import cool_maps.plot as cplt
 pd.set_option('display.width', 320, "display.max_columns", 20)  # for display in pycharm console
 plt.rcParams.update({'font.size': 15})
 
@@ -117,6 +118,15 @@ def main(filedir, ab, addns, clims, diff_lims, varname, savedir):
         SON=[]
     )
 
+    # arguments for the map for all plots
+    kwargs = dict()
+    kwargs['figsize'] = (9, 8)
+    kwargs['coast'] = 'high'  # low high full
+    kwargs['oceancolor'] = cfeature.COLORS['water']
+    kwargs['decimal_degrees'] = True
+    kwargs['bathymetry'] = False
+    kwargs['padding'] = 0
+
     # generate plots for yearly seasonal averages
     for y, items in file_summary_years.items():
         for season_code, files in items.items():
@@ -146,15 +156,15 @@ def main(filedir, ab, addns, clims, diff_lims, varname, savedir):
                         season = season_mapping[season_code]['name']
 
                         # plot maps of avg seasonal chl for each year
-                        fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-                        plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
+                        fig, ax = cplt.create(extent, **kwargs)
+                        plt.subplots_adjust(top=.91, bottom=0.08, right=.94, left=0.06)
 
                         # define bathymetry levels and data
                         CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
                                          transform=ccrs.PlateCarree())
                         ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
 
-                        cf.add_map_features(ax, extent)
+                        #cf.add_map_features(ax, extent)
 
                         if varname == 'chlor_a':
                             cmap = cmo.cm.algae
@@ -244,15 +254,15 @@ def main(filedir, ab, addns, clims, diff_lims, varname, savedir):
         season = season_mapping[season_code]['name']
 
         # plot maps of overall seasonal averages
-        fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-        plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
+        fig, ax = cplt.create(extent, **kwargs)
+        plt.subplots_adjust(top=.91, bottom=0.08, right=.94, left=0.06)
 
         # define bathymetry levels and data
         CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
                          transform=ccrs.PlateCarree())
         ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
 
-        cf.add_map_features(ax, extent)
+        #cf.add_map_features(ax, extent)
 
         if varname == 'chlor_a':
             cmap = cmo.cm.algae
@@ -317,15 +327,15 @@ def main(filedir, ab, addns, clims, diff_lims, varname, savedir):
             cmap.set_bad('white')
 
             # plot maps of seasonal-yearly anomalies
-            fig, ax = plt.subplots(figsize=(9, 8), subplot_kw=dict(projection=ccrs.Mercator()))
-            plt.subplots_adjust(top=.92, bottom=0.08, right=.96, left=0)
+            fig, ax = cplt.create(extent, **kwargs)
+            plt.subplots_adjust(top=.91, bottom=0.08, right=.94, left=0.06)
 
             # define bathymetry levels and data
             CS = plt.contour(bath_lon, bath_lat, bath_elev, levels, linewidths=.75, alpha=.5, colors='k',
                              transform=ccrs.PlateCarree())
             ax.clabel(CS, levels, inline=True, fontsize=7, fmt='%d')
 
-            cf.add_map_features(ax, extent)
+            #cf.add_map_features(ax, extent)
 
             if varname == 'chlor_a':
                 cbar_lab = 'Chlorophyll-a Anomaly (mg m$^{-3}$)'
