@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2021
-Last modified: 10/2/2026
+Last modified: 11/3/2026
 Plot bottom/surface omega/pH maps using CODAP-NA, EcoMon, and glider datasets.
 ERDDAP server: https://rucool-sampling.marine.rutgers.edu/erddap/tabledap/vessel_glider_surface_bottom_OA_data_NES.html
 """
@@ -196,7 +196,22 @@ def main(stype, variable, vers, clims, addns, savedir):
                     sfile = os.path.join(savedir_yearly, 'with_strata', f'{stype}_{variable}_map_{min_year}-{max_year}-{season.lower()}-{vers}-strata.png')
                     os.makedirs(os.path.join(savedir_yearly, 'with_strata'), exist_ok=True)
 
-                plt.savefig(sfile, dpi=200)
+                # save the static map for the year-month if there is data for that year-month
+                if len(df_season_year) > 0:
+                    plt.savefig(sfile, dpi=200)
+
+                # save images to make an animation of the year-month maps
+                savedir_yearly_animation = os.path.join(savedir, f'{stype}_{variable}_years', f'{season.lower()}-animation')
+                os.makedirs(savedir_yearly_animation, exist_ok=True)
+
+                if len(df_season_year) > 0:
+                    versions = ['b', 'c', 'd', 'e', 'f', 'g']
+                else:
+                    versions = ['b', 'c', 'd']
+                for v in versions:
+                    sfile = os.path.join(savedir_yearly_animation, f'{stype}_{variable}_map_{y}-{season.lower()}-{v}.png')
+                    plt.savefig(sfile, dpi=200)
+                
                 plt.close()
 
                 # add to summary
