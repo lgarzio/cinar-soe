@@ -99,7 +99,7 @@ def main(glider_dir, vessel_file, savedir):
         )
 
         #ds_year = ds_year.swap_dims({'time': 'obs'})
-        save_file = os.path.join(savedir, f'glider_vessel_surface_bottom_OA_data_{str(year)}.nc')
+        save_file = os.path.join(savedir, f'vessel_glider_surface_bottom_OA_data_NES_{str(year)}.nc')
         ds_year.to_netcdf(save_file, encoding=encoding, format='netCDF4', engine='netcdf4', unlimited_dims='time')
 
 
