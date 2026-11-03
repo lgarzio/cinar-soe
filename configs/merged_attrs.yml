@@ -10,7 +10,7 @@ global_attrs:
     in support of the annual NOAA State of the Ecosystem reports that synthesize Northeast Shelf ecosystem information for the New England and Mid-Atlantic Fishery Management Councils.
   institution: Rutgers University
   program: NOAA Ocean Acidification Program
-  project: NOAA State of the Ecosystem: New England and Mid-Atlantic
+  project: NOAA State of the Ecosystem New England and Mid-Atlantic
   title: Surface and bottom OA data along the Northeast US Shelf
   conventions: CF-1.11
   infoUrl: https://www.fisheries.noaa.gov/new-england-mid-atlantic/ecosystems/state-ecosystem-reports-northeast-us-shelf, https://rucool.marine.rutgers.edu/
