@@ -1,19 +1,19 @@
 global_attrs:
-  acknowledgment: Funding provided by the National Oceanic and Atmospheric Administration
+  acknowledgment: Funding provided by the National Oceanic and Atmospheric Administration (NOAA)
   contributor_name: Grace Saba,Lori Garzio
   contributor_role: Principal Investigator,Data Management
   creator_institution: Rutgers University
   creator_email: lgarzio@marine.rutgers.edu
   creator_name: Lori Garzio
   creator_url: rucool.marine.rutgers.edu
-  comment: Synthesis of surface and bottom pH and aragonite saturation state data from vessel-based and glider-based measurements that were spatially limited to the U.S. Northeast Shelf.
+  comment: Synthesis of surface and bottom pH and aragonite saturation state data from vessel-based and glider-based measurements that were spatially limited to the Northeast U.S. Shelf
+    in support of the annual NOAA State of the Ecosystem reports that synthesize Northeast Shelf ecosystem information for the New England and Mid-Atlantic Fishery Management Councils.
   institution: Rutgers University
   program: NOAA Ocean Acidification Program
-  project: xxxx
-  title: Surface and bottom OA data along the US Northeast Shelf
-  history: xx
+  project: NOAA State of the Ecosystem: New England and Mid-Atlantic
+  title: Surface and bottom OA data along the Northeast US Shelf
   conventions: CF-1.11
-  infoUrl: https://rucool.marine.rutgers.edu/
+  infoUrl: https://www.fisheries.noaa.gov/new-england-mid-atlantic/ecosystems/state-ecosystem-reports-northeast-us-shelf, https://rucool.marine.rutgers.edu/
 variable_attrs:
   collection_method:
     long_name: Collection method
