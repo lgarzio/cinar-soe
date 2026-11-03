@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 3/8/2021
-Last modified: 10/2/2026
+Last modified: 11/3/2026
 """
 
 import PyCO2SYS as pyco2
@@ -166,9 +166,11 @@ def return_bottom_data(df,
             lon_idx = abs(bathymetry_file.lon.values - profile_coords[0]).argmin()
             station_water_depth = -bathymetry_file.elevation[lat_idx, lon_idx].values
 
-        # if the sample is within +/- 20% of the water column, keep the value
-        depth_threshold = [station_water_depth * .8, station_water_depth * 1.2]
-        if np.logical_and(max_depth > depth_threshold[0], max_depth < depth_threshold[1]):
+        # if the sample is within 20% of the depth of the water column, append data to bottom dataset
+        # if the sample is deeper than the water column depth, assume the water column depth is incorrect (due to the resolution
+        # of the bathymetry data) and append the data to the bottom dataset
+        # cap the difference at +40m
+        if np.logical_and(max_depth > station_water_depth * .8, station_water_depth - max_depth < 40):
             if len(dfc) > 1:
                 # drop lines where measured omega isn't available
                 dfc = dfc[dfc[omega_col] > 0]

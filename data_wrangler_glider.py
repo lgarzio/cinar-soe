@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/23/2024
-Last modified: 10/27/2026
+Last modified: 11/3/2026
 Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
@@ -210,7 +210,10 @@ def main(filedir, savedir):
                 station_water_depth = -bathy.elevation[lat_idx, lon_idx].values
 
                 # if the glider sample is within 20% of the depth of the water column, append data to bottom dataset
-                if max_profile_depth > station_water_depth * .8:
+                # if the glider sample is deeper than the water column depth, assume the water column depth is incorrect (due to the resolution
+                # of the bathymetry data) and append the glider data to the bottom dataset
+                # cap the difference at +40m
+                if np.logical_and(max_profile_depth > station_water_depth * .8, station_water_depth - max_profile_depth < 40):
                     df_sel_bottom = df_sel[df_sel['depth_interpolated'] > max_profile_depth - 1]
                     depth_bottom = np.nanmedian(df_sel_bottom['depth_interpolated'].values)
                     pH_bottom = np.nanmedian(df_sel_bottom[phvar].values)
