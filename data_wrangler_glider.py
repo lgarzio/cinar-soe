@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/23/2024
-Last modified: 11/3/2026
+Last modified: 11/6/2026
 Grab bottom- and surface-water pH and omega data from glider datasets and export each dataset as NetCDF.
 Datasets are available on the IOOS Glider DAC ERDDAP server https://gliders.ioos.us/erddap/index.html
 as well as the NCEI OCADS data portal https://www.ncei.noaa.gov/products/ocean-carbon-acidification-data-system.
@@ -144,6 +144,7 @@ def main(filedir, savedir):
                                                       ds['temperature_interpolated'].values,
                                                       ds['pressure_interpolated'].values)
             ds['aragonite_saturation_state'] = xr.DataArray(arag, coords=ds[phvar].coords, dims=ds[phvar].dims, name='aragonite_saturation_state')
+            ds['total_alkalinity'] = xr.DataArray(ta, coords=ds[phvar].coords, dims=ds[phvar].dims, name='total_alkalinity')
 
         # apply QC to umaine gliders for some issues I noticed
         if glider in ['um_242']:
@@ -151,23 +152,26 @@ def main(filedir, savedir):
             idx = np.where(ds.total_alkalinity.values < 1900)[0]
             ds[phvar].values[idx] = np.nan
             ds['aragonite_saturation_state'].values[idx] = np.nan
+            ds['total_alkalinity'].values[idx] = np.nan
 
             # omega
             idx = np.where(ds['aragonite_saturation_state'].values > 5)[0]
             ds[phvar].values[idx] = np.nan
             ds['aragonite_saturation_state'].values[idx] = np.nan
-
+            ds['total_alkalinity'].values[idx] = np.nan
             # pH
             idx = np.where(ds[phvar] > 8.6)[0]
             ds[phvar].values[idx] = np.nan
             ds['aragonite_saturation_state'].values[idx] = np.nan
+            ds['total_alkalinity'].values[idx] = np.nan
 
         try:
             ds.depth_interpolated.values
         except AttributeError:
             interpolate_var(ds, 'depth')
 
-        df_vars = ['time','depth_interpolated', phvar, 'aragonite_saturation_state', 'temperature_interpolated', latvar, lonvar]
+        df_vars = ['time','depth_interpolated', phvar, 'aragonite_saturation_state', 'temperature_interpolated', 
+                   latvar, lonvar, 'salinity', 'total_alkalinity']
         if deployment.startswith('SBU'):
             df_vars.append('precise_lat')
             df_vars.append('precise_lon')
@@ -201,6 +205,8 @@ def main(filedir, savedir):
                 pH_surface = np.nanmedian(df_sel_surface[phvar].values)
                 omega_surface = np.nanmedian(df_sel_surface['aragonite_saturation_state'].values)
                 temp_surface = np.nanmedian(df_sel_surface['temperature_interpolated'].values)
+                salinity_surface = np.nanmedian(df_sel_surface['salinity'].values)
+                TA_surface = np.nanmedian(df_sel_surface['total_alkalinity'].values)
 
                 # grab bottom data (max depth - 1m)
                 # compare the glider depth to the global bathymetry file
@@ -219,11 +225,15 @@ def main(filedir, savedir):
                     pH_bottom = np.nanmedian(df_sel_bottom[phvar].values)
                     omega_bottom = np.nanmedian(df_sel_bottom['aragonite_saturation_state'].values)
                     temp_bottom = np.nanmedian(df_sel_bottom['temperature_interpolated'].values)
+                    salinity_bottom = np.nanmedian(df_sel_bottom['salinity'].values)
+                    TA_bottom = np.nanmedian(df_sel_bottom['total_alkalinity'].values)
                 else:
                     depth_bottom = np.nan
                     pH_bottom = np.nan
                     omega_bottom = np.nan
                     temp_bottom = np.nan
+                    salinity_bottom = np.nan
+                    TA_bottom = np.nan
 
                 if np.isnan(pH_surface) and np.isnan(pH_bottom):
                     print(f'No valid pH surface or bottom data for profile {pid} in deployment {deployment}, skipping...')
@@ -243,9 +253,13 @@ def main(filedir, savedir):
                 data['data_vars']['pH_surface']['data'] = np.append(data['data_vars']['pH_surface']['data'], pH_surface)
                 data['data_vars']['omega_surface']['data'] = np.append(data['data_vars']['omega_surface']['data'], omega_surface)
                 data['data_vars']['temperature_surface']['data'] = np.append(data['data_vars']['temperature_surface']['data'], temp_surface)
+                data['data_vars']['salinity_surface']['data'] = np.append(data['data_vars']['salinity_surface']['data'], salinity_surface)
+                data['data_vars']['total_alkalinity_surface']['data'] = np.append(data['data_vars']['total_alkalinity_surface']['data'], TA_surface)
                 data['data_vars']['pH_bottom']['data'] = np.append(data['data_vars']['pH_bottom']['data'], pH_bottom)
                 data['data_vars']['omega_bottom']['data'] = np.append(data['data_vars']['omega_bottom']['data'], omega_bottom)
                 data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'], temp_bottom)
+                data['data_vars']['salinity_bottom']['data'] = np.append(data['data_vars']['salinity_bottom']['data'], salinity_bottom)
+                data['data_vars']['total_alkalinity_bottom']['data'] = np.append(data['data_vars']['total_alkalinity_bottom']['data'], TA_bottom)
 
         # save data as netcdf
         ds = xr.Dataset.from_dict(data)

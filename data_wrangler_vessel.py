@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 10/18/2024
-Last modified: 10/12/2026
+Last modified: 11/5/2026
 Grab vessel-based surface- and bottom-water pH and omega data from CODAP-NA and additional ECOMON 
 and ECOA datasets. Export as NetCDF.
 CODAP-NA v2026 (NCEI Accession 0315529) dataset downloaded via the NCEI OCADs data portal
@@ -93,22 +93,26 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             tm = pd.to_datetime(dfc_profile.time.values[0]).timestamp()
             
             # find surface sample
-            mindepth, pH_surface, omega_surface, temp_surface = cf.return_surface_data(dfc_profile,
+            mindepth, pH_surface, omega_surface, temp_surface, salinity_surface, TA_surface = cf.return_surface_data(dfc_profile,
                                                                                        depth_col='Depth_meter', 
                                                                                        pH_col='pH_TS_insitu_combined', 
                                                                                        omega_col='Aragonite', 
                                                                                        omega_est_col=None,
-                                                                                       temp_col='CTDTEMP_ITS90_deg_C')
+                                                                                       temp_col='CTDTEMP_ITS90_deg_C',
+                                                                                       salinity_col='recommended_Salinity_PSS78',
+                                                                                       TA_col='TALK_umol_kg')
 
             # find deep sample
-            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth = cf.return_bottom_data(dfc_profile, 
+            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth, salinity_bottom, TA_bottom = cf.return_bottom_data(dfc_profile, 
                                                                                                         bathy, 
                                                                                                         profile_coords,
                                                                                                         depth_col='Depth_meter', 
                                                                                                         pH_col='pH_TS_insitu_combined', 
                                                                                                         omega_col='Aragonite', 
                                                                                                         omega_est_col=None,
-                                                                                                        temp_col='CTDTEMP_ITS90_deg_C')
+                                                                                                        temp_col='CTDTEMP_ITS90_deg_C',
+                                                                                                        salinity_col='recommended_Salinity_PSS78',
+                                                                                                        TA_col='TALK_umol_kg')
 
             if np.isnan(mindepth) and np.isnan(maxdepth):
                 continue
@@ -134,10 +138,14 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
 
             data['data_vars']['pH_surface']['data'] = np.append(data['data_vars']['pH_surface']['data'], pH_surface)
             data['data_vars']['omega_surface']['data'] = np.append(data['data_vars']['omega_surface']['data'], omega_surface)
+            data['data_vars']['salinity_surface']['data'] = np.append(data['data_vars']['salinity_surface']['data'], salinity_surface)
+            data['data_vars']['total_alkalinity_surface']['data'] = np.append(data['data_vars']['total_alkalinity_surface']['data'], TA_surface)
             data['data_vars']['temperature_surface']['data'] = np.append(data['data_vars']['temperature_surface']['data'], temp_surface)
             data['data_vars']['pH_bottom']['data'] = np.append(data['data_vars']['pH_bottom']['data'], pH_bottom)
             data['data_vars']['omega_bottom']['data'] = np.append(data['data_vars']['omega_bottom']['data'], omega_bottom)
             data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'], temp_bottom)
+            data['data_vars']['salinity_bottom']['data'] = np.append(data['data_vars']['salinity_bottom']['data'], salinity_bottom)
+            data['data_vars']['total_alkalinity_bottom']['data'] = np.append(data['data_vars']['total_alkalinity_bottom']['data'], TA_bottom)
 
     # # export CODAP summary
     # ds = xr.Dataset.from_dict(data)
@@ -329,15 +337,17 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             tm = pd.to_datetime(df_profile.time.values[0]).timestamp()
 
             # find surface sample
-            mindepth, pH_surface, omega_surface, temp_surface = cf.return_surface_data(df_profile,
+            mindepth, pH_surface, omega_surface, temp_surface, salinity_surface, TA_surface = cf.return_surface_data(df_profile,
                                                                                        depth_col=depthvar,
                                                                                        pH_col='pH_insitu',
                                                                                        omega_col='aragonite',
                                                                                        omega_est_col=None,
-                                                                                       temp_col='TEMP')
+                                                                                       temp_col='TEMP',
+                                                                                       salinity_col='SAL',
+                                                                                       TA_col=tavar)
 
             # find deep sample
-            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth = cf.return_bottom_data(df_profile, 
+            maxdepth, pH_bottom, omega_bottom, temp_bottom, station_water_depth, salinity_bottom, TA_bottom = cf.return_bottom_data(df_profile, 
                                                                                                         bathy, 
                                                                                                         profile_coords,
                                                                                                         depth_col=depthvar,
@@ -345,7 +355,9 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                                                                         pH_col='pH_insitu',
                                                                                                         omega_col='aragonite',
                                                                                                         omega_est_col=None,
-                                                                                                        temp_col='TEMP')
+                                                                                                        temp_col='TEMP',
+                                                                                                        salinity_col='SAL',
+                                                                                                        TA_col=tavar)
 
             if np.isnan(mindepth) and np.isnan(maxdepth):
                 continue
@@ -368,10 +380,14 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['data_vars']['pH_surface']['data'] = np.append(data['data_vars']['pH_surface']['data'], pH_surface)
             data['data_vars']['omega_surface']['data'] = np.append(data['data_vars']['omega_surface']['data'], omega_surface)
             data['data_vars']['temperature_surface']['data'] = np.append(data['data_vars']['temperature_surface']['data'], temp_surface)
-            
+            data['data_vars']['salinity_surface']['data'] = np.append(data['data_vars']['salinity_surface']['data'], salinity_surface)
+            data['data_vars']['total_alkalinity_surface']['data'] = np.append(data['data_vars']['total_alkalinity_surface']['data'], TA_surface)
+
             data['data_vars']['pH_bottom']['data'] = np.append(data['data_vars']['pH_bottom']['data'], pH_bottom)
             data['data_vars']['omega_bottom']['data'] = np.append(data['data_vars']['omega_bottom']['data'], omega_bottom)
             data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'], temp_bottom)
+            data['data_vars']['salinity_bottom']['data'] = np.append(data['data_vars']['salinity_bottom']['data'], salinity_bottom)
+            data['data_vars']['total_alkalinity_bottom']['data'] = np.append(data['data_vars']['total_alkalinity_bottom']['data'], TA_bottom)
 
         # add the flow thru data
         if len(df_ft) > 0:
@@ -399,14 +415,19 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
             data['data_vars']['pH_surface']['data'] = np.append(data['data_vars']['pH_surface']['data'], df_ft['pH_insitu'].values)
             data['data_vars']['omega_surface']['data'] = np.append(data['data_vars']['omega_surface']['data'], df_ft['aragonite'].values)
             data['data_vars']['temperature_surface']['data'] = np.append(data['data_vars']['temperature_surface']['data'], df_ft['TEMP'].values)
-            
+            data['data_vars']['salinity_surface']['data'] = np.append(data['data_vars']['salinity_surface']['data'], df_ft['SAL'].values)
+            data['data_vars']['total_alkalinity_surface']['data'] = np.append(data['data_vars']['total_alkalinity_surface']['data'], df_ft[tavar].values)
+
             data['data_vars']['pH_bottom']['data'] = np.append(data['data_vars']['pH_bottom']['data'],  
                                                             np.repeat(np.nan, len(tm)))
             data['data_vars']['omega_bottom']['data'] = np.append(data['data_vars']['omega_bottom']['data'],  
                                                                 np.repeat(np.nan, len(tm)))
             data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'], 
                                                                         np.repeat(np.nan, len(tm)))
-
+            data['data_vars']['salinity_bottom']['data'] = np.append(data['data_vars']['salinity_bottom']['data'], 
+                                                                     np.repeat(np.nan, len(tm)))
+            data['data_vars']['total_alkalinity_bottom']['data'] = np.append(data['data_vars']['total_alkalinity_bottom']['data'], 
+                                                                            np.repeat(np.nan, len(tm)))
 ########################################################################################################################
     # additional underway/surface datasets
     for uf in underway_files:
@@ -555,6 +576,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                                np.round(omega_surface, 2))
         data['data_vars']['temperature_surface']['data'] = np.append(data['data_vars']['temperature_surface']['data'], 
                                                                      df[tempvar].values)
+        data['data_vars']['salinity_surface']['data'] = np.append(data['data_vars']['salinity_surface']['data'],
+                                                                  df[salvar].values)
+        data['data_vars']['total_alkalinity_surface']['data'] = np.append(data['data_vars']['total_alkalinity_surface']['data'], 
+                                                                          df[tavar].values)
         
         data['data_vars']['pH_bottom']['data'] = np.append(data['data_vars']['pH_bottom']['data'],
                                                            np.repeat(np.nan, len(df.time)))
@@ -562,6 +587,10 @@ def main(lon_bounds, lat_bounds, codap_file, extra_files, underway_files, savedi
                                                               np.repeat(np.nan, len(df.time)))
         data['data_vars']['temperature_bottom']['data'] = np.append(data['data_vars']['temperature_bottom']['data'],
                                                                     np.repeat(np.nan, len(df.time)))
+        data['data_vars']['salinity_bottom']['data'] = np.append(data['data_vars']['salinity_bottom']['data'],
+                                                                 np.repeat(np.nan, len(df.time)))
+        data['data_vars']['total_alkalinity_bottom']['data'] = np.append(data['data_vars']['total_alkalinity_bottom']['data'],
+                                                                        np.repeat(np.nan, len(df.time)))
 
     # save as netcdf
     outds = xr.Dataset.from_dict(data)

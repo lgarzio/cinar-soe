@@ -94,8 +94,48 @@ variable_attrs:
       CTD/Rosette cast where water samples were collected for profiles deeper than
       10m, provided the sampling depth was within 20% of total
       water column depth, capped at a difference of 40m. For stations with multiple samples at the deepest measurement,
-      the median value was calculated. For glider datasets, Bottom temperature is the the median 
+      the median value was calculated. For glider datasets, bottom temperature is the the median 
       of the values within the deepest 1m of a glider profile, provided the sampling depth was 
       within 20% of total water column depth, capped at a difference of 40m. 
       Vessel- and glider-based samples recorded deeper than the water depth were retained and the difference is attributed to the 
       coarse resolution and therefore lower accuracy of the bathymetry data.
+  salinity_surface:
+    dtype: float32
+    dims: time
+    attrs:
+      units: '1'
+      long_name: Surface Salinity
+      description: For vessel datasets, surface salinity is the shallowest measurement of a
+        vertical CTD/Rosette cast if the sample depth was < 10m. For stations with
+        multiple samples at the shallowest depth, the median value was calculated. For glider datasets,
+        surface salinity is the the median of the values recorded at the 
+        top of a glider profile (between 2-4m depth), provided the glider profile reached at least 10m depth.
+  salinity_bottom:
+    dtype: float32
+    dims: time
+    attrs:
+      units: '1'
+      long_name: Bottom Salinity
+      description: For vessel datasets, bottom salinity is the deepest measurement of a vertical CTD/Rosette
+        cast where water samples were collected for profiles deeper than 10m, provided
+        the sampling depth was within 20% of total water column depth, capped at a difference of 40m. 
+        For stations with multiple samples at the deepest measurement,
+        the median value was calculated. For glider datasets, bottom salinity is the the median 
+        of the values within the deepest 1m of a glider profile, provided the sampling depth was 
+        within 20% of total water column depth, capped at a difference of 40m. 
+        Vessel- and glider-based samples recorded deeper than the water depth were retained and the difference is attributed to the 
+        coarse resolution and therefore lower accuracy of the bathymetry data.
+  total_alkalinity_surface:
+    dtype: float32
+    dims: time
+    attrs:
+      units: umol kg-1
+      long_name: Surface Total Alkalinity
+      description: "For vessel datasets, surface TA is the shallowest measurement of a vertical CTD/Rosette cast if the sample depth was < 10m. For stations with multiple samples at the shallowest depth, the median value was calculated. For glider datasets, surface TA is the the median of the values at the top of a glider profile (between 2-4m depth), provided the glider profile reached at least 10m depth. For Mid-Atlantic Bight deployments, TA was estimated from salinity using a linear relationship (TA = m * salinity + b) with the following seasonal coefficients ({'DJF': {'m': 48.71, 'b': 601.75}, 'MAM': {'m': 42.37, 'b': 817.59}, 'JJA': {'m': 50.75, 'b': 541.81}, 'SON': {'m': 46.42, 'b': 687.99}}) determined from in-situ water sampling data taken during glider deployments and recoveries in addition to ship-based water samples in the Mid-Atlantic Bight region as described in Wright-Fairbanks et al 2020 https://doi.org/10.1029/2020JC016505. For Gulf of Maine deployments, TA was estimated from salinity using the linear relationship (TA = 47.6 * salinity + 643.0) taken from Hunt et al 2021, figure 6, Historical regression or Gulf of Maine: https://doi.org/10.1016/j.marchem.2021.103960
+  total_alkalinity_bottom:
+    dtype: float32
+    dims: time
+    attrs:
+      units: umol kg-1
+      long_name: Bottom Total Alkalinity
+      description: "For vessel datasets, bottom TA is the deepest measurement of a vertical CTD/Rosette cast where water samples were collected for profiles deeper than 10m, provided the sampling depth was within 20% of total water column depth, capped at a difference of 40m. For stations with multiple samples at the deepest measurement, the median value was calculated. For glider datasets, bottom TA is the the median of the values within the deepest 1m of a glider profile, provided the sampling depth was within 20% of total water column depth, capped at a difference of 40m. Samples recorded deeper than the water depth were retained and the difference is attributed to the coarse resolution and therefore lower accuracy of the bathymetry data. For Mid-Atlantic Bight deployments, TA was estimated from salinity using a linear relationship (TA = m * salinity + b) with the following seasonal coefficients ({'DJF': {'m': 48.71, 'b': 601.75}, 'MAM': {'m': 42.37, 'b': 817.59}, 'JJA': {'m': 50.75, 'b': 541.81}, 'SON': {'m': 46.42, 'b': 687.99}}) determined from in-situ water sampling data taken during glider deployments and recoveries in addition to ship-based water samples in the Mid-Atlantic Bight region as described in Wright-Fairbanks et al 2020 https://doi.org/10.1029/2020JC016505. For Gulf of Maine deployments, TA was estimated from salinity using the linear relationship (TA = 47.6 * salinity + 643.0) taken from Hunt et al 2021, figure 6, Historical regression for Gulf of Maine: https://doi.org/10.1016/j.marchem.2021.103960"

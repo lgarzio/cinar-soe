@@ -143,3 +143,47 @@ temperature_bottom:
       coarse resolution and therefore lower accuracy of the bathymetry data.
       For stations with multiple samples at the deepest measurement, the
       median value was calculated.
+salinity_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Surface Salinity
+    description: Surface salinity is the shallowest measurement of a
+      vertical CTD/Rosette cast if the sample depth was < 10m. For stations with
+      multiple samples at the shallowest depth, the median value was calculated.
+salinity_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: '1'
+    long_name: Bottom Salinity
+    description: Bottom salinity is the deepest measurement of a vertical CTD/Rosette
+      cast where water samples were collected for profiles deeper than 10m, provided
+      the sampling depth was within 20% of total water column depth, capped at a difference of 40m. 
+      Samples recorded deeper than the water depth were retained and the difference is attributed to the 
+      coarse resolution and therefore lower accuracy of the bathymetry data.
+      For stations with multiple samples at the deepest measurement, the
+      median value was calculated.
+total_alkalinity_surface:
+  dtype: float32
+  dims: time
+  attrs:
+    units: umol kg-1
+    long_name: Surface Total Alkalinity
+    description: Surface TA is the shallowest measurement of a
+      vertical CTD/Rosette cast if the sample depth was < 10m. For stations with
+      multiple samples at the shallowest depth, the median value was calculated.
+total_alkalinity_bottom:
+  dtype: float32
+  dims: time
+  attrs:
+    units: umol kg-1
+    long_name: Bottom Total Alkalinity
+    description: Bottom TA is the deepest measurement of a vertical CTD/Rosette
+      cast where water samples were collected for profiles deeper than 10m, provided
+      the sampling depth was within 20% of total water column depth, capped at a difference of 40m. 
+      Samples recorded deeper than the water depth were retained and the difference is attributed to the 
+      coarse resolution and therefore lower accuracy of the bathymetry data.
+      For stations with multiple samples at the deepest measurement, the
+      median value was calculated.

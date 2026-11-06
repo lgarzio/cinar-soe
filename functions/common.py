@@ -2,7 +2,7 @@
 
 """
 Author: Lori Garzio on 3/8/2021
-Last modified: 11/3/2026
+Last modified: 11/5/2026
 """
 
 import PyCO2SYS as pyco2
@@ -138,7 +138,9 @@ def return_bottom_data(df,
                        pH_col='pH', 
                        omega_col='Aragonite', 
                        omega_est_col='aragonite_estimated', 
-                       temp_col='CTDTEMP_ITS90'):
+                       temp_col='CTDTEMP_ITS90',
+                       salinity_col='recommended_Salinity_PSS78',
+                       TA_col='TALK_umol_kg'):
     """
     Returns data points collected at the bottom of a profile
     :param df: dataframe containing data for one profile
@@ -150,6 +152,8 @@ def return_bottom_data(df,
     :param omega_col: name of the column containing omega data, default='Aragonite'
     :param omega_est_col: name of the column containing estimated omega data, default='aragonite_estimated'
     :param temp_col: name of the column containing temperature data, default='CTDTEMP_ITS90'
+    :param salinity_col: name of the column containing salinity data, default='recommended_Salinity_PSS78'
+    :param TA_col: name of the column containing total alkalinity data, default='TALK_umol_kg'
     """
     max_depth = np.nanmax(df[depth_col])
     if max_depth > 10:  # sampling depth has to be >10m
@@ -190,11 +194,21 @@ def return_bottom_data(df,
             if bool(temp_bottom < 0):
                 temp_bottom = np.nan
 
+            salinity_bottom = np.nanmedian(np.array(dfc[salinity_col]))
+            if bool(salinity_bottom < 0):
+                salinity_bottom = np.nan
+
+            TA_bottom = np.nanmedian(np.array(dfc[TA_col]))
+            if bool(TA_bottom < 0):
+                TA_bottom = np.nan
+
         else:
             max_depth = np.nan
             pH_bottom = np.nan
             omega_bottom = np.nan
             temp_bottom = np.nan
+            salinity_bottom = np.nan
+            TA_bottom = np.nan
 
     else:
         max_depth = np.nan
@@ -202,8 +216,10 @@ def return_bottom_data(df,
         pH_bottom = np.nan
         omega_bottom = np.nan
         temp_bottom = np.nan
+        salinity_bottom = np.nan
+        TA_bottom = np.nan
 
-    return max_depth, pH_bottom, omega_bottom, temp_bottom, station_water_depth
+    return max_depth, pH_bottom, omega_bottom, temp_bottom, station_water_depth, salinity_bottom, TA_bottom
 
 
 def return_surface_data(df, 
@@ -211,7 +227,9 @@ def return_surface_data(df,
                         pH_col='pH', 
                         omega_col='Aragonite', 
                         omega_est_col='aragonite_estimated',
-                        temp_col='CTDTEMP_ITS90'):
+                        temp_col='CTDTEMP_ITS90',
+                        salinity_col='recommended_Salinity_PSS78',
+                        TA_col='TALK_umol_kg'):
     """
     Returns data points collected at the surface of a profile
     :param df: dataframe containing data for one profile
@@ -219,6 +237,9 @@ def return_surface_data(df,
     :param pH_col: name of the column containing pH data, default='pH'
     :param omega_col: name of the column containing omega data, default='Aragonite'
     :param omega_est_col: name of the column containing estimated omega data, default='aragonite_estimated'
+    :param temp_col: name of the column containing temperature data, default='CTDTEMP_ITS90'
+    :param salinity_col: name of the column containing salinity data, default='recommended_Salinity_PSS78'
+    :param TA_col: name of the column containing total alkalinity data, default='TALK_umol_kg'
     """
     min_depth = np.nanmin(df[depth_col])
     if min_depth < 10:
@@ -243,13 +264,24 @@ def return_surface_data(df,
         temp_surface = np.nanmedian(np.array(dfc[temp_col]))
         if bool(temp_surface < 0):
             temp_surface = np.nan
+
+        salinity_surface = np.nanmedian(np.array(dfc[salinity_col]))
+        if bool(salinity_surface < 0):
+            salinity_surface = np.nan
+
+        TA_surface = np.nanmedian(np.array(dfc[TA_col]))
+        if bool(TA_surface < 0):
+            TA_surface = np.nan
+
     else:
         min_depth = np.nan
         pH_surface = np.nan
         omega_surface = np.nan
         temp_surface = np.nan
-    
-    return min_depth, pH_surface, omega_surface, temp_surface
+        salinity_surface = np.nan
+        TA_surface = np.nan
+
+    return min_depth, pH_surface, omega_surface, temp_surface, salinity_surface, TA_surface
 
 
 def run_co2sys_ta_ph(ta, ph, sal, temp=25, press_dbar=0):
